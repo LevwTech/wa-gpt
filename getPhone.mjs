@@ -1,7 +1,8 @@
+import { BOT_PHONE_NUMBER, WHATSAPP_URL} from "./helpers/constants.mjs"
 const getWhatsAppInfo = (payload) => {
     // TODO validate auth 
     return {
-        phone: "1234567890",
-        whatsAppUrl: "https://wa.me/1234567890?text=Hello%20World!"
+        phone: BOT_PHONE_NUMBER,
+        whatsAppUrl: WHATSAPP_URL
     }
 }

@@ -1,6 +1,7 @@
 import axios from "axios";
 import _ from "lodash";
 import { getTTLByDays } from "./helpers/utils.mjs";
+import { START_MESSAGE, START_MESSAGE_REPLY } from "./helpers/constants.mjs";
 
 export const receiveMessage = async (body) => {
     // Extracting the needed info from WhatsApp's callback
@@ -21,18 +22,13 @@ export const receiveMessage = async (body) => {
         text,
         ttl
       }
-      const messageBody = { body: `Hello ${userName}, you said: ${text}` }
-      await sendMessage(userNumber, 'text', messageBody);
-}
-
-export const verifyWhatsAppWebhook = (body) => {
-    if (body['hub.mode'] === 'subscribe' && body['hub.verify_token'] === "verify_token")
-    return body['hub.challenge'];    
-    else 
-        return {
-            status: "error",
-            message: "Invalid verify token"
-        }
+      if(text === START_MESSAGE) {
+        const messageBody = { body: START_MESSAGE_REPLY }
+        await sendMessage(userNumber, 'text', messageBody);
+        return;
+      }
+    const messageBody = { body: `Hello ${userName}, you said: ${text}` }
+    await sendMessage(userNumber, 'text', messageBody);
 }
 
 const sendMessage =  async (to, type, messageBody) => {
@@ -61,3 +57,13 @@ const sendMessage =  async (to, type, messageBody) => {
     };
     // TODO save message in dynamoDB
   }
+
+  export const verifyWhatsAppWebhook = (body) => {
+    if (body['hub.mode'] === 'subscribe' && body['hub.verify_token'] === "verify_token")
+    return body['hub.challenge'];    
+    else 
+        return {
+            status: "error",
+            message: "Invalid verify token"
+        }
+}
