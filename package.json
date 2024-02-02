@@ -2,9 +2,9 @@
   "name": "wa-gpt",
   "version": "1.0.0",
   "description": "wa-gpt Lambda function",
-  "main": "app.mjs",
+  "main": "index.mjs",
   "scripts": {
-    "build": "node app.js"
+    "build": "node index.js"
   },
   "dependencies": {
     "axios": "^1.1.2",
