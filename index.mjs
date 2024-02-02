@@ -1,16 +1,27 @@
 import uuid4 from "uuid4";
 import { getBody, getAction, handleBadRequest, headers} from "./helpers/utils.mjs";
+import { receiveMessage } from "./messageHandler.mjs";
 
 export const handler = async (event, context, callback) => {
   let body;
   try {
     body = getBody(event);
     const action = getAction(event);
-    if (!body || !action) return handleBadRequest();
-    const response = {
-      uuid: uuid4(),
-      status: "success",
-      message: "Hello World!"
+    if (!action) return handleBadRequest();
+    let response;
+    switch (action) {
+      case "phone":
+          response = getWhatsAppInfo();
+          break;
+      case "message":
+          if (event.httpMethod === "GET")
+            response = verifyWhatsAppWebhook(body);
+          else
+            await receiveMessage(body);
+            return;
+      default:  
+        return handleBadRequest();
+
     }
     return {
       statusCode: 200,
