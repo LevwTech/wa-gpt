@@ -5,7 +5,7 @@ import { receiveMessage, verifyWhatsAppWebhook } from "./messageHandler.mjs";
 export const handler = async (event, context, callback) => {
   try {
     const action = getAction(event);
-    const body = event.body
+    const body = event.body;
     const queryStringParams = event.queryStringParameters;
     let response;
     switch (action) {
