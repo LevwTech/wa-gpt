@@ -1,5 +1,5 @@
-import uuid4 from "uuid4";
-import { getBody, getAction, handleBadRequest, headers} from "./helpers/utils.mjs";
+import { getBody, getAction, handleBadRequest, handleMessageReceived, headers} from "./helpers/utils.mjs";
+import { getWhatsAppInfo } from "./getPhone.mjs";
 import { receiveMessage } from "./messageHandler.mjs";
 
 export const handler = async (event, context, callback) => {
@@ -18,10 +18,10 @@ export const handler = async (event, context, callback) => {
             response = verifyWhatsAppWebhook(body);
             break;
           }
-          return await receiveMessage(body);
+        await receiveMessage(body);
+        return handleMessageReceived();
       default:  
         return handleBadRequest();
-
     }
     return {
       statusCode: 200,

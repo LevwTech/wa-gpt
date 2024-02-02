@@ -9,6 +9,13 @@ export const handleBadRequest = () => ({
   body: "Bad Request",
 });
 
+export const handleMessageReceived = () => ({
+  statusCode: 200,
+  body: "Message Received",
+});
+
+
+
 export const headers = {
   "Content-Type": "application/json",
   Accept: "application/json",
