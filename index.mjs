@@ -14,8 +14,10 @@ export const handler = async (event, context, callback) => {
           response = getWhatsAppInfo();
           break;
       case "message":
-          if (event.httpMethod === "GET")
+          if (event.httpMethod === "GET") {
             response = verifyWhatsAppWebhook(body);
+            break;
+          }
           else
             await receiveMessage(body);
             return;
