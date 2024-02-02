@@ -26,7 +26,7 @@ export const handler = async (event, context, callback) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(response)
+      body: response,
     };
   } catch (error) {
     const errorResponse = {
@@ -36,7 +36,7 @@ export const handler = async (event, context, callback) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(errorResponse),
+      body: errorResponse
     };
   }
 };
