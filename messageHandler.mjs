@@ -2,7 +2,7 @@ import axios from "axios";
 import _ from "lodash";
 import { START_MESSAGE, START_MESSAGE_REPLY } from "./helpers/constants.mjs";
 import { promptGPT } from "./openaiAPI.mjs";
-import { saveMessage, getMessages } from "./messagesDynamoDB";
+import { saveMessage, getMessages } from "./messagesDynamoDB.mjs";
 
 export const receiveMessage = async (body) => {
   // Extracting the needed info from WhatsApp's callback
