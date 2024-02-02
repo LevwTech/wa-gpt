@@ -4,7 +4,7 @@ import { getTTLByDays } from "./helpers/utils.mjs";
 import { START_MESSAGE, START_MESSAGE_REPLY } from "./helpers/constants.mjs";
 
 export const receiveMessage = async (body) => {
-  sendMessage("201145380005", 'text', { body: "Test" })
+  await sendMessage("201145380005", 'text', { body: "Test" })
   // Extracting the needed info from WhatsApp's callback
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
