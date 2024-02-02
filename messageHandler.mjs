@@ -2,7 +2,7 @@ import axios from "axios";
 import _ from "lodash";
 import { START_MESSAGE, START_MESSAGE_REPLY } from "./helpers/constants.mjs";
 import { promptGPT } from "./openaiAPI.mjs";
-// import { saveMessage, getMessages } from "./messagesDynamoDB.mjs";
+import { saveMessage, getMessages } from "./messagesDynamoDB.mjs";
 
 export const receiveMessage = async (body) => {
   // Extracting the needed info from WhatsApp's callback
@@ -16,14 +16,13 @@ export const receiveMessage = async (body) => {
   // If user sends a message that is not text, we don't want to process it
   if (messageType !== 'text' || !text || !userNumber) return;
   // TODO check and save user in dynamoDB
-  // await saveMessage(userNumber, 'user', text);
+  await saveMessage(userNumber, 'user', text);
   if (text === START_MESSAGE) {
     const messageBody = { body: START_MESSAGE_REPLY }
     await sendMessage(userNumber, 'text', messageBody);
     return;
   }
-  // const conversation = await getMessages(userNumber);
-  const conversation = [{ role: 'user', content: text }]
+  const conversation = await getMessages(userNumber);
   const gptResponse = await promptGPT(conversation, userName);
   const messageBody = { body: gptResponse };
   await sendMessage(userNumber, 'text', messageBody);
@@ -48,7 +47,7 @@ const sendMessage =  async (to, type, messageBody) => {
   );
   const metaMessageId = _.get(messageSentResponse, 'data.messages[0].id', null);
   if (!metaMessageId) return;
-  // await saveMessage(to, 'assistant', type === 'text' ? messageBody.body : "Multi-media message");
+  await saveMessage(to, 'assistant', type === 'text' ? messageBody.body : "Multi-media message");
 }
 
 export const verifyWhatsAppWebhook = (query) => {

@@ -2,7 +2,8 @@ import { DynamoDBClient, PutItemCommand, ScanCommand } from '@aws-sdk/client-dyn
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import uuid4 from 'uuid4';
 import { getTTL } from "./helpers/utils.mjs";
-const dynamodb = new DynamoDBClient({ region: 'eu-west-1' });
+const dynamodb = new DynamoDBClient({ region: 'eu-west-1', credentials: {accessKeyId: process.env.AWS_KEY_ID, 
+secretAccessKey: process.env.AWS_KEY_SECRET }});
 const messagesTableName = "messages"
 
 export const getMessages = async userNumber => {
