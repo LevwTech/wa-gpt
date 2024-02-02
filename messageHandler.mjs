@@ -1,7 +1,8 @@
 import axios from "axios";
 import _ from "lodash";
-import { getTTLByDays } from "./helpers/utils.mjs";
+import { getTTL } from "./helpers/utils.mjs";
 import { START_MESSAGE, START_MESSAGE_REPLY } from "./helpers/constants.mjs";
+import { promptGPT } from "./openaiAPI.mjs";
 
 export const receiveMessage = async (body) => {
   // Extracting the needed info from WhatsApp's callback
@@ -16,9 +17,10 @@ export const receiveMessage = async (body) => {
   if (messageType !== 'text' || !text || !userNumber) return;
   // TODO check and save user in dynamoDB
   // TODO save message in dynamoDB
-  const ttl = getTTLByDays(7) // messages will be deleted after 7 days
+  const ttl = getTTL()
   const message = {
-    text,
+    content: text,
+    role: 'user',
     ttl
   }
   if (text === START_MESSAGE) {
@@ -27,7 +29,9 @@ export const receiveMessage = async (body) => {
     return;
   }
   // TODO fetch conversation and make api call to gpt-3
-  const messageBody = { body: `Hello ${userName}, you said: ${text}` }
+  const gptMessages = [{role: 'user', content: text}] // temp until we have conversation in dynamoDB
+  const gptResponse = await promptGPT(gptMessages);
+  const messageBody = { body: gptResponse }
   await sendMessage(userNumber, 'text', messageBody);
 }
 
@@ -50,9 +54,10 @@ const sendMessage =  async (to, type, messageBody) => {
   );
   const metaMessageId = _.get(messageSentResponse, 'data.messages[0].id', null);
   if (!metaMessageId) return;
-  const ttl = getTTLByDays(7);
+  const ttl = getTTL();
   const message = {
-    text: type === 'text' ? messageBody.body : "Multi-media message",
+    content: type === 'text' ? messageBody.body : "Multi-media message",
+    role: 'assistant',
     ttl
   };
   // TODO save message in dynamoDB

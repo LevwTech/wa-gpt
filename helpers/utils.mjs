@@ -1,8 +1,10 @@
+import { MESSAGES_DAYS_TILL_EXPIRATION } from "./constants.mjs";
+
 export const getAction = (event) => event.path.split("/")[1];
 
 export const getBody = (event) => JSON.parse(event.body);
 
-export const getTTLByDays = (days) => Math.floor(Date.now() / 1000) + 60 * 60 * 24 * days;
+export const getTTL = () => Math.floor(Date.now() / 1000) + 60 * 60 * 24 * MESSAGES_DAYS_TILL_EXPIRATION;
 
 export const handleBadRequest = () => ({
   statusCode: 400,

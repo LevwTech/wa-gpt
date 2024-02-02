@@ -1,5 +1,5 @@
 import { getBody, getAction, handleBadRequest, handleMessageReceived, headers} from "./helpers/utils.mjs";
-import { getWhatsAppInfo } from "./getPhone.mjs";
+import { getWhatsAppBotUrl } from "./whatsAppBotInfo.mjs";
 import { receiveMessage, verifyWhatsAppWebhook } from "./messageHandler.mjs";
 
 export const handler = async (event, context, callback) => {
@@ -10,7 +10,7 @@ export const handler = async (event, context, callback) => {
     let response;
     switch (action) {
       case "phone":
-          response = getWhatsAppInfo();
+          response = getWhatsAppBotUrl();
           break;
       case "message":
           if (event.httpMethod === "GET") {
