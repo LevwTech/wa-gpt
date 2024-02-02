@@ -11,8 +11,7 @@ export const receiveMessage = async (body) => {
   const userNumber = _.get(body, 'entry[0].changes[0].value.messages[0].from', null);
   const messageType = _.get(body, 'entry[0].changes[0].value.messages[0].type', null);
   const text = _.get(body, 'entry[0].changes[0].value.messages[0].text.body', null);
-
-  await sendMessage("201145380005", 'text', { body: objectToString(body) })
+  
   // If user sends a message that is not text, we don't want to process it
   if (messageType !== 'text' || !text || !userNumber) return;
   // TODO check and save user in dynamoDB
@@ -62,20 +61,4 @@ const sendMessage =  async (to, type, messageBody) => {
 export const verifyWhatsAppWebhook = (query) => {
   if (query['hub.mode'] === 'subscribe' && query['hub.verify_token'] === "verify_token")
     return query['hub.challenge'];    
-}
-function objectToString(obj) {
-    let result = '';
-
-    function appendToString(obj) {
-        for (let key in obj) {
-            if (typeof obj[key] === 'object' && obj[key] !== null) {
-                appendToString(obj[key]);
-            } else {
-                result += key + ': ' + obj[key] + ' ';
-            }
-        }
-    }
-
-    appendToString(obj);
-    return result.trim(); // Remove trailing space
 }
