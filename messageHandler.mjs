@@ -29,9 +29,9 @@ export const receiveMessage = async (body) => {
     return;
   }
   // TODO fetch conversation and make api call to gpt-3
-  const gptMessages = [{role: 'user', content: text}] // temp until we have conversation in dynamoDB
-  const gptResponse = await promptGPT(gptMessages);
-  const messageBody = { body: gptResponse }
+  // const gptMessages = [{role: 'user', content: text}] // temp until we have conversation in dynamoDB
+  // const gptResponse = await promptGPT(gptMessages);
+  const messageBody = { body: "hey" }
   await sendMessage(userNumber, 'text', messageBody);
 }
 
