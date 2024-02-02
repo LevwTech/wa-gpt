@@ -1,3 +1,4 @@
+import axios from "axios";
 import { OPEN_AI_SYSTEM_MESSAGE } from "./helpers/constants.mjs";
 
 export const promptGPT = async (messages) => {
