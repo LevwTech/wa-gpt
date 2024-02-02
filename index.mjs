@@ -18,8 +18,7 @@ export const handler = async (event, context, callback) => {
             response = verifyWhatsAppWebhook(body);
             break;
           }
-          await receiveMessage(body);
-          return;
+          return await receiveMessage(body);
       default:  
         return handleBadRequest();
 
