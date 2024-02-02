@@ -18,8 +18,10 @@ export const getMessages = async userNumber => {
 	const command = new ScanCommand(params);
 	const data = await dynamodb.send(command);
 	const messages = data.Items.map(item => {
-		return { role: unmarshall(item).role, content: unmarshall(item).content};
+		return { role: unmarshall(item).role, content: unmarshall(item).content, ttl: unmarshall(item).ttl};
 	});
+	messages.sort((a, b) => a.ttl - b.ttl);
+	messages.forEach(message => delete message.ttl);
 	return messages;
 };
 
