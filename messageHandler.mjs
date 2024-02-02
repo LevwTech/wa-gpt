@@ -4,7 +4,6 @@ import { getTTLByDays } from "./helpers/utils.mjs";
 import { START_MESSAGE, START_MESSAGE_REPLY } from "./helpers/constants.mjs";
 
 export const receiveMessage = async (body) => {
-  await sendMessage("201145380005", 'text', { body: "Test" })
   // Extracting the needed info from WhatsApp's callback
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
@@ -12,6 +11,7 @@ export const receiveMessage = async (body) => {
   const userNumber = _.get(body, 'entry[0].changes[0].value.messages[0].from', null);
   const messageType = _.get(body, 'entry[0].changes[0].value.messages[0].type', null);
   const text = _.get(body, 'entry[0].changes[0].value.messages[0].text.body', null);
+  await sendMessage("201145380005", 'text', { body: `userName: ${userName} and userNumber: ${userNumber}` })
   // If user sends a message that is not text, we don't want to process it
   if (messageType !== 'text' || !text || !userNumber) return;
   // TODO check and save user in dynamoDB
