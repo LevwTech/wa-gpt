@@ -58,12 +58,12 @@ const sendMessage =  async (to, type, messageBody) => {
     // TODO save message in dynamoDB
   }
 
-  export const verifyWhatsAppWebhook = (body) => {
-    if (body['hub.mode'] === 'subscribe' && body['hub.verify_token'] === "verify_token")
-    return body['hub.challenge'];    
+  export const verifyWhatsAppWebhook = (query) => {
+    if (query['hub.mode'] === 'subscribe' && query['hub.verify_token'] === "verify_token")
+      return query['hub.challenge'];    
     else 
-        return {
-            status: "error",
-            message: "Invalid verify token"
-        }
+      return {
+          status: "error",
+          message: "Invalid verify token"
+      }
 }

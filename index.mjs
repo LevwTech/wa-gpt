@@ -1,13 +1,13 @@
 import { getBody, getAction, handleBadRequest, handleMessageReceived, headers} from "./helpers/utils.mjs";
 import { getWhatsAppInfo } from "./getPhone.mjs";
-import { receiveMessage } from "./messageHandler.mjs";
+import { receiveMessage, verifyWhatsAppWebhook } from "./messageHandler.mjs";
 
 export const handler = async (event, context, callback) => {
   let body;
   try {
     body = getBody(event);
     const action = getAction(event);
-    if (!action) return handleBadRequest();
+    const queryStringParams = event.queryStringParameters;
     let response;
     switch (action) {
       case "phone":
@@ -15,7 +15,7 @@ export const handler = async (event, context, callback) => {
           break;
       case "message":
           if (event.httpMethod === "GET") {
-            response = verifyWhatsAppWebhook(body);
+            response = verifyWhatsAppWebhook(queryStringParams);
             break;
           }
         await receiveMessage(body);
