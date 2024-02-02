@@ -8,13 +8,11 @@ export const receiveMessage = async (body) => {
     const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
       if (isStatusUpdateNotification) return;
       const userName = _.get(body, 'entry[0].changes[0].value.contacts[0].profile.name','User Name');
-      const userNumber = _.get(body, 'entry[0].changes[0].value.messages[0].from', 'User Number');
+      const userNumber = _.get(body, 'entry[0].changes[0].value.messages[0].from', null);
       const messageType = _.get(body, 'entry[0].changes[0].value.messages[0].type', null);
       const text = _.get(body, 'entry[0].changes[0].value.messages[0].text.body', null);
       // If user sends a message that is not text, we don't want to process it
-      if (messageType !== 'text' || !text) {
-        return;
-      }
+      if (messageType !== 'text' || !text || !userNumber) return;
       // TODO check and save user in dynamoDB
       // TODO save message in dynamoDB
       const ttl = getTTLByDays(7) // messages will be deleted after 7 days
