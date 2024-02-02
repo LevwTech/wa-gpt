@@ -7,7 +7,7 @@ export const receiveMessage = async (body) => {
   // Extracting the needed info from WhatsApp's callback
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
-  const userName = _.get(body, 'entry[0].changes[0].value.contacts[0].profile.name','User Name');
+  const userName = _.get(body, 'entry[0].changes[0].value.contacts[0].profile.name', 'UserName');
   const userNumber = _.get(body, 'entry[0].changes[0].value.messages[0].from', null);
   const messageType = _.get(body, 'entry[0].changes[0].value.messages[0].type', null);
   const text = _.get(body, 'entry[0].changes[0].value.messages[0].text.body', null);
