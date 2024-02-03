@@ -1,11 +1,12 @@
 import axios from "axios";
 import { SUMMARIZE_SYSTEM_MESSAGE } from "./helpers/constants.mjs";
 
+const headers = {
+  Authorization: `Bearer ${process.env.OPENAI_KEY}`,
+};
+
 export const promptGPT = async (conversation, userName) => {
   const systemMessage = getSystemMessage(userName);
-  const headers = {
-    Authorization: `Bearer ${process.env.OPENAI_KEY}`,
-  };
   const response = await axios.post(
       `https://api.openai.com/v1/chat/completions`,
       {
@@ -18,9 +19,6 @@ export const promptGPT = async (conversation, userName) => {
 }
 
 export const promptGPTSummarize = async (conversation) => {
-  const headers = {
-    Authorization: `Bearer ${process.env.OPENAI_KEY}`,
-  };
   const response = await axios.post(
       `https://api.openai.com/v1/chat/completions`,
       {
