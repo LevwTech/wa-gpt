@@ -22,25 +22,12 @@ export const getMessages = async userNumber => {
 };
   
 export const saveMessage = async (userNumber, role, content) => {
-	const messages = await getMessages(userNumber);
+	let messages = await getMessages(userNumber);
 	const newMessage = { role, content };
 	messages.push(newMessage);
+	// If the conversation has more than a certain number of messages, we summarize the conversation
 	if (role === "assistant" && messages.length > MAX_NUMBER_OF_MESSAGES) {
-	  const summarizedMessages = await promptGPTSummarize(messages);
-	  const Item = {
-		userNumber: { S: userNumber.toString() },
-		messages: {
-		  L: summarizedMessages.map(message => ({
-			  M: {
-				  role: { S: message.role.toString() },
-				  content: { S: message.content.toString() }
-				}
-			}))
-		}
-	  };
-	  const command = new PutItemCommand({ TableName: messagesTableName, Item });
-	  await dynamodb.send(command);
-	  return;
+	  messages = await promptGPTSummarize(messages);
 	}
 	const Item = {
 	  userNumber: { S: userNumber.toString() },
