@@ -38,7 +38,7 @@ export const saveMessage = async (userNumber, role, content) => {
 				content: { S: message.content.toString() }
 			}
 		}))
-	}
+	  }
 	};
 	const command = new PutItemCommand({ TableName: messagesTableName, Item });
 	await dynamodb.send(command);
