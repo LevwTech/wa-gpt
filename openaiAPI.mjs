@@ -29,7 +29,7 @@ export const promptGPTSummarize = async (conversation) => {
       },
       { headers },
   );
-  return { content: response.data.choices[0].message.content, role: "system"}
+  return [{ content: response.data.choices[0].message.content, role: "system"}]
 }
 
 const getSystemMessage = (userName) => {
