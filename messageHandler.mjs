@@ -46,7 +46,7 @@ const sendMessage =  async (to, type, messageBody) => {
     { headers },
   );
   const metaMessageId = _.get(messageSentResponse, 'data.messages[0].id', null);
-  if (!metaMessageId) return;
+  if (!metaMessageId) throw new Error('Error sending message');
   await saveMessage(to, 'assistant', type === 'text' ? messageBody.body : "Multi-media message");
 }
 
