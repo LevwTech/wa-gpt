@@ -1,5 +1,6 @@
 import axios from "axios";
 import { SUMMARIZE_SYSTEM_MESSAGE } from "./helpers/constants.mjs";
+import { limitTextLength } from "./helpers/utils.mjs";
 
 const headers = {
   Authorization: `Bearer ${process.env.OPENAI_KEY}`,
@@ -15,7 +16,8 @@ export const promptGPT = async (conversation, userName) => {
       },
       { headers },
   );
-  return response.data.choices[0].message.content;
+  const content = limitTextLength(response.data.choices[0].message.content)
+  return content;
 }
 
 export const promptGPTSummarize = async (conversation) => {
