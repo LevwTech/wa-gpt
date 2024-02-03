@@ -31,6 +31,7 @@ export const handler = async (event, context, callback) => {
     const errorResponse = {
       status: "error",
       message: "Internal Server Error",
+      body: error
     };
     return {
       statusCode: 200,
