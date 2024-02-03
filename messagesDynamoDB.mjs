@@ -26,7 +26,7 @@ export const saveMessage = async (userNumber, role, content) => {
 	const newMessage = { role, content };
 	messages.push(newMessage);
 	if (role === "assistant" && messages.length > MAX_NUMBER_OF_MESSAGES) {
-	  const summarizedMessages = promptGPTSummarize(messages);
+	  const summarizedMessages = await promptGPTSummarize(messages);
 	  const Item = {
 		userNumber: { S: userNumber.toString() },
 		messages: {
