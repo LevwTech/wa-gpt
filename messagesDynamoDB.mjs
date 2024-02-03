@@ -1,38 +1,58 @@
-import { DynamoDBClient, PutItemCommand, ScanCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
-import uuid4 from 'uuid4';
-import { getTTL } from "./helpers/utils.mjs";
+import { MAX_NUMBER_OF_MESSAGES } from './helpers/constants.mjs';
+import { promptGPTSummarize } from './openaiAPI.mjs';
+
 const dynamodb = new DynamoDBClient({ region: 'eu-west-1', credentials: {accessKeyId: process.env.AWS_KEY_ID, 
 secretAccessKey: process.env.AWS_KEY_SECRET }});
-const messagesTableName = "messages"
+
+const messagesTableName = "conversations"
 
 export const getMessages = async userNumber => {
-    const params = {
-		TableName: messagesTableName,
-		FilterExpression: 'userNumber = :userNumber',
-		ExpressionAttributeValues: {
-			':userNumber': { S: userNumber.toString() }
-		}
-	};
-
-	const command = new ScanCommand(params);
-	const data = await dynamodb.send(command);
-	const messages = data.Items.map(item => {
-		return { role: unmarshall(item).role, content: unmarshall(item).content, ttl: unmarshall(item).ttl};
-	});
-	messages.sort((a, b) => a.ttl - b.ttl);
-	messages.forEach(message => delete message.ttl);
-	return messages;
-};
-
-export const saveMessage = async (userNumber, role, content) => {
-	const Item = {
-		id: { S: uuid4().toString() },
+	const command = new GetItemCommand({
+	  TableName: messagesTableName,
+	  Key: {
 		userNumber: { S: userNumber.toString() },
-		role: { S: role.toString() },
-		content: { S: content.toString() },
-        ttl: { N: getTTL().toString() }
+	  },
+	});
+	const data = await dynamodb.send(command);
+	if(!data.Item) return [];
+	const conversation = unmarshall(data.Item);
+	return conversation.messages;
+};
+  
+export const saveMessage = async (userNumber, role, content) => {
+	const messages = await getMessages(userNumber);
+	const newMessage = { role, content };
+	messages.push(newMessage);
+	if (role === "assistant" && messages.length > MAX_NUMBER_OF_MESSAGES) {
+	  const summarizedMessages = promptGPTSummarize(messages);
+	  const Item = {
+		userNumber: { S: userNumber.toString() },
+		messages: {
+		  L: summarizedMessages.map(message => ({
+			  M: {
+				  role: { S: message.role.toString() },
+				  content: { S: message.content.toString() }
+				}
+			}))
+		}
+	  };
+	  const command = new PutItemCommand({ TableName: messagesTableName, Item });
+	  await dynamodb.send(command);
+	  return;
+	}
+	const Item = {
+	  userNumber: { S: userNumber.toString() },
+	  messages: {
+		L: messages.map(message => ({
+			M: {
+				role: { S: message.role.toString() },
+				content: { S: message.content.toString() }
+			}
+		}))
+	}
 	};
 	const command = new PutItemCommand({ TableName: messagesTableName, Item });
 	await dynamodb.send(command);
-};
+}
