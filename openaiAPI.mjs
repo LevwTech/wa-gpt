@@ -5,11 +5,12 @@ import { limitTextLength } from "./helpers/utils.mjs";
 const headers = {
   Authorization: `Bearer ${process.env.OPENAI_KEY}`,
 };
+const openAIURL = "https://api.openai.com/v1/chat/completions";
 
 export const promptGPT = async (conversation, userName) => {
   const systemMessage = getSystemMessage(userName);
   const response = await axios.post(
-      `https://api.openai.com/v1/chat/completions`,
+      openAIURL,
       {
         messages: [systemMessage, ...conversation],
         model: "gpt-3.5-turbo",
@@ -23,7 +24,7 @@ export const promptGPT = async (conversation, userName) => {
 
 export const promptGPTSummarize = async (conversation) => {
   const response = await axios.post(
-      `https://api.openai.com/v1/chat/completions`,
+      openAIURL,
       {
         messages: [...conversation, SUMMARIZE_SYSTEM_MESSAGE],
         model: "gpt-3.5-turbo",
