@@ -30,13 +30,13 @@ export const handler = async (event, context, callback) => {
   } catch (error) {
     const errorResponse = {
       status: "error",
-      message: "Internal Server Error",
+      message: error.message,
       body: error
     };
     return {
       statusCode: 200,
       headers,
-      body: errorResponse
+      body: JSON.stringify(errorResponse),
     };
   }
 };
