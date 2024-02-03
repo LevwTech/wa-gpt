@@ -17,7 +17,6 @@ export const promptGPT = async (conversation, userName) => {
       },
       { headers },
   );
-  if (response.data.error?.message) throw new Error(response.data.error.message);
   const content = limitTextLength(response.data.choices[0].message.content)
   return content;
 }
@@ -31,7 +30,6 @@ export const promptGPTSummarize = async (conversation) => {
       },
       { headers },
   );
-  if (response.data.error?.message) throw new Error(response.data.error.message);
   return [{ content: response.data.choices[0].message.content, role: "system"}]
 }
 
