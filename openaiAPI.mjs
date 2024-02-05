@@ -35,6 +35,7 @@ export const promptGPTSummarize = async (conversation) => {
 }
 
 export const createImage = async (prompt) => {
+  prompt = limitTextLength(prompt, 1000)
   const response = await axios.post(
     `${openAIURL}/images/generations`,
       {
