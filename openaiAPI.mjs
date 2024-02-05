@@ -34,12 +34,13 @@ export const promptGPTSummarize = async (conversation) => {
   return [{ content: response.data.choices[0].message.content, role: "system"}]
 }
 
-export const createImage = async (prompt) => {
+export const createImage = async (prompt, isSticker) => {
   prompt = limitTextLength(prompt, 1000)
   const response = await axios.post(
     `${openAIURL}/images/generations`,
       {
-        prompt
+        prompt,
+        size: isSticker ? "512x512" : "1024x1024",
       },
       { headers },
   );

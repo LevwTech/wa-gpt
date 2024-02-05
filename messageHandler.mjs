@@ -1,7 +1,7 @@
 import axios from "axios";
 import _ from "lodash";
-import { START_MESSAGE, START_MESSAGE_REPLY } from "./helpers/constants.mjs";
-import { checkIfMediaRequest, extractMediaRequestPrompt} from "./helpers/utils.mjs";
+import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE } from "./helpers/constants.mjs";
+import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.mjs";
 import { promptGPT, createImage } from "./openaiAPI.mjs";
 import { saveMessage, getMessages } from "./messagesDynamoDB.mjs";
 
@@ -20,11 +20,24 @@ export const receiveMessage = async (body) => {
   await saveMessage(userNumber, 'user', text);
   if (checkIfMediaRequest(text, 'image')) {
     const imagePrompt = extractMediaRequestPrompt(text, 'image');
+    const waitTextMessageBody = { body: IMAGE_WAIT_MESSAGE};
+    await sendMessage(userNumber, 'text', waitTextMessageBody);
     const imageUrl = await createImage(imagePrompt);
     const messageBody = {
       link: imageUrl,
     };
     await sendMessage(userNumber, 'image', messageBody);
+    return;
+  }
+  if (checkIfMediaRequest(text, 'sticker')) {
+    const imagePrompt = extractMediaRequestPrompt(text, 'sticker');
+    const waitTextMessageBody = { body: STICKER_WAIT_MESSAGE};
+    await sendMessage(userNumber, 'text', waitTextMessageBody);
+    const imageUrl = await createImage(imagePrompt, true);
+    const messageBody = {
+      link: imageUrl,
+    };
+    await sendMessage(userNumber, 'sticker', messageBody);
     return;
   }
   if (text === START_MESSAGE) {
