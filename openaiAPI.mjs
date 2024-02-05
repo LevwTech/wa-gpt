@@ -1,7 +1,7 @@
 import axios from "axios";
-import { SUMMARIZE_SYSTEM_MESSAGE } from "./helpers/constants.mjs";
-import { limitTextLength } from "./helpers/utils.mjs";
-import { WHATSAPP_MAX_TEXT_LENGTH } from "./helpers/constants.mjs";
+import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH } from "./helpers/constants.mjs";
+import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
+import { uploadImageToS3 } from "./imageUpoad.mjs";
 
 const headers = {
   Authorization: `Bearer ${process.env.OPENAI_KEY}`,
@@ -36,6 +36,7 @@ export const promptGPTSummarize = async (conversation) => {
 
 export const createImage = async (prompt, isSticker) => {
   prompt = limitTextLength(prompt, 1000)
+  prompt = isSticker ? generateStickerPrompt(prompt) : prompt;
   const response = await axios.post(
     `${openAIURL}/images/generations`,
       {
@@ -44,7 +45,8 @@ export const createImage = async (prompt, isSticker) => {
       },
       { headers },
   );
-  return response.data.data[0].url
+  const url = response.data.data[0].url
+  return isSticker ? await uploadImageToS3(url) : url
 }
 
 const getSystemMessage = (userName) => {

@@ -45,3 +45,6 @@ export const extractMediaRequestPrompt = (text, type) => {
       return trimmedText;
   }
 }
+export const generateStickerPrompt = text => {
+  return 'A sticker with white stroke of: #FFFFFF and a solid black background. ' + text;
+}
