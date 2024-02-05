@@ -22,11 +22,26 @@ export const headers = {
   "Access-Control-Allow-Origin": "*",
 };
 
-export const limitTextLength = (text) => {
-  const WHATSAPP_MAX_LENGTH = 4096;
-  if (text.length > WHATSAPP_MAX_LENGTH) {
-      return text.substring(0, WHATSAPP_MAX_LENGTH);
+export const limitTextLength = (text, maxLength) => {
+  if (text.length > maxLength) {
+      return text.substring(0, maxLength);
   } else {
       return text;
+  }
+}
+
+export const checkIfMediaRequest = (text, type) => {
+  const trimmedText = text.trim().toLowerCase();
+  return trimmedText.startsWith(`/${type}`) || trimmedText.startsWith(`${type}`);
+}
+
+export const extractMediaRequestPrompt = (text, type) => {
+  const trimmedText = text.trim();
+  if (trimmedText.toLowerCase().startsWith(`/${type}`)) {
+      return trimmedText.slice(6).trim();
+  } else if (trimmedText.toLowerCase().startsWith(`${type}`)) {
+      return trimmedText.slice(5).trim();
+  } else {
+      return trimmedText;
   }
 }
