@@ -16,7 +16,7 @@ export const getMessages = async userNumber => {
 	  },
 	});
 	const data = await dynamodb.send(command);
-	if(!data.Item) return [];
+	if (!data.Item) return [];
 	const conversation = unmarshall(data.Item);
 	return conversation.messages;
 };

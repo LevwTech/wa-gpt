@@ -14,7 +14,7 @@ export const getUser = async userNumber => {
 	  },
 	});
 	const data = await dynamodb.send(command);
-	if(!data) return null;
+	if(!data.Item) return null;
 	const user = unmarshall(data.Item);
 	return user;
 };
