@@ -2,7 +2,7 @@ import axios from "axios";
 import _ from "lodash";
 import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE } from "./helpers/constants.mjs";
 import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.mjs";
-import { promptGPT, createImage } from "./openaiAPI.mjs";
+import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 
 export const receiveMessage = async (body) => {

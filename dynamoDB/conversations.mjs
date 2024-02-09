@@ -1,7 +1,7 @@
 import { DynamoDBClient, PutItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 import { MAX_NUMBER_OF_MESSAGES } from '../helpers/constants.mjs';
-import { promptGPTSummarize } from '../openaiAPI.mjs';
+import { promptGPTSummarize } from '../openAI.mjs';
 
 const dynamodb = new DynamoDBClient({ region: 'eu-west-1', credentials: {accessKeyId: process.env.AWS_KEY_ID, 
 secretAccessKey: process.env.AWS_KEY_SECRET }});
