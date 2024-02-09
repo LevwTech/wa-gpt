@@ -1,7 +1,7 @@
 import axios from "axios";
 import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH } from "./helpers/constants.mjs";
 import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
-import { uploadImageToS3 } from "./imageUpoad.mjs";
+import { uploadImageToS3 } from "./imageUpload.mjs";
 
 const headers = {
   Authorization: `Bearer ${process.env.OPENAI_KEY}`,
