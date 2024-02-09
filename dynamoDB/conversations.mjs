@@ -6,7 +6,7 @@ import { promptGPTSummarize } from '../openAI.mjs';
 const dynamodb = new DynamoDBClient({ region: 'eu-west-1', credentials: {accessKeyId: process.env.AWS_KEY_ID, 
 secretAccessKey: process.env.AWS_KEY_SECRET }});
 
-const messagesTableName = "conversations"
+const messagesTableName = "conversations";
 
 export const getMessages = async userNumber => {
 	const command = new GetItemCommand({

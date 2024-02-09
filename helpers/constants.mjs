@@ -7,3 +7,7 @@ export const SUMMARIZE_SYSTEM_MESSAGE = { content: "Summarize the conversation s
 export const WHATSAPP_MAX_TEXT_LENGTH = 4096;
 export const STICKER_WAIT_MESSAGE = "Hold tight! your awesome sticker is being generated ⏳";
 export const IMAGE_WAIT_MESSAGE = "Hold tight! I'm generating your image ⏳🖼️";
+export const STARTER_TOKENS_COUNT = 20;
+export const TEXT_TOKEN_COST = 1;
+export const IMAGE_TOKEN_COST = 4;
+export const STICKER_TOKEN_COST = 4;

@@ -1,54 +1,74 @@
 import axios from "axios";
 import _ from "lodash";
-import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE } from "./helpers/constants.mjs";
+import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST } from "./helpers/constants.mjs";
 import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.mjs";
 import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
+import { saveUser, getUser } from "./dynamoDB/users.mjs";
 
 export const receiveMessage = async (body) => {
-  // Extracting the needed info from WhatsApp's callback
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
-  const userName = _.get(body, 'entry[0].changes[0].value.contacts[0].profile.name', 'UserName');
-  const userNumber = _.get(body, 'entry[0].changes[0].value.messages[0].from', null);
-  const messageType = _.get(body, 'entry[0].changes[0].value.messages[0].type', null);
-  const text = _.get(body, 'entry[0].changes[0].value.messages[0].text.body', null);
-  
+  const { userName, userNumber, messageType, text } = extractMessageInfo(body);
   // If user sends a message that is not text, we don't want to process it
   if (messageType !== 'text' || !text || !userNumber) return;
-  // TODO check and save user in dynamoDB
+  const user = await getUser(userNumber);
+  if (!user) await saveUser(userNumber, STARTER_TOKENS_COUNT, false, false);
   await saveMessage(userNumber, 'user', text);
-  if (checkIfMediaRequest(text, 'image')) {
-    const imagePrompt = extractMediaRequestPrompt(text, 'image');
+  let type;
+  let messageBody;
+  const isUserAllowed = user.tokensCount > 0 || user.isSubscribed;
+  if (!isUserAllowed) {
+    type = 'text';
+    // messageBody.body = user.hasSubscribed ? getSubscribeMessage() : getFreeTrialEndedMessage(); // TODO
+    messageBody = { body: "You have no more tokens left. Please buy more tokens." }
+  }
+  else if (checkIfMediaRequest(text, 'image')) {
+    type = 'image';
+    const imagePrompt = extractMediaRequestPrompt(text, type);
     const waitTextMessageBody = { body: IMAGE_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const imageUrl = await createImage(imagePrompt);
-    const messageBody = {
+    messageBody = {
       link: imageUrl,
     };
-    await sendMessage(userNumber, 'image', messageBody);
-    return;
   }
-  if (checkIfMediaRequest(text, 'sticker')) {
-    const imagePrompt = extractMediaRequestPrompt(text, 'sticker');
+  else if (checkIfMediaRequest(text, 'sticker')) {
+    type = 'sticker';
+    const stickerPrompt = extractMediaRequestPrompt(text, type);
     const waitTextMessageBody = { body: STICKER_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
-    const imageUrl = await createImage(imagePrompt, true);
-    const messageBody = {
-      link: imageUrl,
+    const stickerUrl = await createImage(stickerPrompt, true);
+    messageBody = {
+      link: stickerUrl,
     };
-    await sendMessage(userNumber, 'sticker', messageBody);
-    return;
   }
-  if (text === START_MESSAGE) {
-    const messageBody = { body: START_MESSAGE_REPLY }
-    await sendMessage(userNumber, 'text', messageBody);
-    return;
+  else if (text === START_MESSAGE) {
+    type = 'text';
+    messageBody = { body: START_MESSAGE_REPLY }
   }
-  const conversation = await getMessages(userNumber);
-  const gptResponse = await promptGPT(conversation, userName);
-  const messageBody = { body: gptResponse };
-  await sendMessage(userNumber, 'text', messageBody);
+  else {
+    type = 'text';
+    const conversation = await getMessages(userNumber);
+    const gptResponse = await promptGPT(conversation, userName);
+    messageBody = { body: gptResponse };
+  }
+  await sendMessage(userNumber, type, messageBody);
+  await saveMessage(userNumber, 'assistant', type === 'text' ? messageBody.body : "Multi-media message");
+  if(!isUserAllowed || text === START_MESSAGE) return;
+  switch (type) {
+    case 'text':
+      await saveUser(userNumber, user.tokensCount - TEXT_TOKEN_COST, user.isSubscribed, user.hasSubscribed);
+      break;
+    case 'image':
+      await saveUser(userNumber, user.tokensCount - IMAGE_TOKEN_COST, user.isSubscribed, user.hasSubscribed);
+      break;
+    case 'sticker':
+      await saveUser(userNumber, user.tokensCount - STICKER_TOKEN_COST, user.isSubscribed, user.hasSubscribed);
+      break;
+    default:
+      break;
+  }
 }
 
 const sendMessage =  async (to, type, messageBody) => {
@@ -70,10 +90,17 @@ const sendMessage =  async (to, type, messageBody) => {
   );
   const metaMessageId = _.get(messageSentResponse, 'data.messages[0].id', null);
   if (!metaMessageId) throw new Error('Error sending message');
-  await saveMessage(to, 'assistant', type === 'text' ? messageBody.body : "Multi-media message");
 }
 
 export const verifyWhatsAppWebhook = (query) => {
   if (query['hub.mode'] === 'subscribe' && query['hub.verify_token'] === "verify_token")
     return query['hub.challenge'];    
 }
+
+const extractMessageInfo = (body) => {
+  const userName = _.get(body, 'entry[0].changes[0].value.contacts[0].profile.name', 'UserName');
+  const userNumber = _.get(body, 'entry[0].changes[0].value.messages[0].from', null);
+  const messageType = _.get(body, 'entry[0].changes[0].value.messages[0].type', null);
+  const text = _.get(body, 'entry[0].changes[0].value.messages[0].text.body', null);
+  return { userName, userNumber, messageType, text}
+};
