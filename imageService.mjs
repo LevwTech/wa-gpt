@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { removeBackground } from "@imgly/background-removal-node";
+// import { removeBackground } from "@imgly/background-removal-node";
 import axios from "axios";
 import AWS from 'aws-sdk';
 
