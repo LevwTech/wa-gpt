@@ -15,8 +15,8 @@ export const getProcessedSticker = async (url) => {
   // let buffer = await removeBackgroundOfImage(url);
   let buffer = await convertImageFromUrlToBuffer(url);
   buffer = await convertImageToWebp(buffer);
-  const url = await uploadImageToS3(buffer);
-  return url;
+  const urlOnS3 = await uploadImageToS3(buffer);
+  return urlOnS3;
 }
 
 const convertImageFromUrlToBuffer = async (url) => {
