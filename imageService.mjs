@@ -1,5 +1,6 @@
 import sharp from 'sharp';
-import {removeBackground} from "@imgly/background-removal-node";
+import { removeBackground } from "@imgly/background-removal-node";
+import axios from "axios";
 import AWS from 'aws-sdk';
 
 const stickerBucket = 'whatsappstickers';
@@ -11,10 +12,16 @@ const s3 = new AWS.S3({
 });
 
 export const getProcessedSticker = async (url) => {
-  let buffer = await removeBackgroundOfImage(url);
+  // let buffer = await removeBackgroundOfImage(url);
+  let buffer = await convertImageFromUrlToBuffer(url);
   buffer = await convertImageToWebp(buffer);
   const url = await uploadImageToS3(buffer);
   return url;
+}
+
+const convertImageFromUrlToBuffer = async (url) => {
+  const response = await axios.get(url, { responseType: 'arraybuffer' });
+  return Buffer.from(response.data);
 }
 
 const removeBackgroundOfImage = async (url) => {
