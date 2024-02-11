@@ -59,7 +59,7 @@ const getSystemMessage = (userName) => {
 
 // Here we prompt GPT to write the dalle prompt for the sticker, this proved to give better results
 const getGPTStickerPrompt = async (prompt) => {
-  const GptPromptToDalle = 'Give me a dalle prompt to generate a sticker with a white stroke and a solid background, focus on the visual reprsentation. The sticker is: ' + prompt;
+  const GptPromptToDalle = 'Give me a dalle prompt to generate a sticker with a white stroke and a solid background, focus on visual descriptions . The sticker is: ' + prompt;
   const response = await axios.post(
       `${openAIURL}/chat/completions`,
       {
