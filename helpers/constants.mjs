@@ -11,4 +11,4 @@ export const IMAGE_WAIT_MESSAGE = "Hold tight! I'm generating your image ⏳🖼
 export const STARTER_TOKENS_COUNT = 20;
 export const TEXT_TOKEN_COST = 1;
 export const IMAGE_TOKEN_COST = 4;
-export const STICKER_TOKEN_COST = 4;
+export const STICKER_TOKEN_COST = 5;
