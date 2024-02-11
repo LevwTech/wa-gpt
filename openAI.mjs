@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH } from "./helpers/constants.mjs";
+import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH } from "./helpers/constants.mjs";
 import { limitTextLength } from "./helpers/utils.mjs";
 // import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
 import { getProcessedSticker } from "./imageService.mjs";
@@ -59,7 +59,7 @@ const getSystemMessage = (userName) => {
 
 // Here we prompt GPT to write the dalle prompt for the sticker, this proved to give better results
 const getGPTStickerPrompt = async (prompt) => {
-  const GptPromptToDalle = 'Give me a dalle prompt to generate a sticker with a white stroke and a solid background, focus on visual descriptions . The sticker is: ' + prompt;
+  const GptPromptToDalle = 'Give me a short dalle prompt not larger than 1000 characters to generate a sticker with a white stroke and a solid background, focus on visual descriptions . The sticker is: ' + prompt;
   const response = await axios.post(
       `${openAIURL}/chat/completions`,
       {
@@ -68,5 +68,6 @@ const getGPTStickerPrompt = async (prompt) => {
       },
       { headers },
   );
-  return response.data.choices[0].message.content;
+  const content = limitTextLength(response.data.choices[0].message.content, DALLE_MAX_TEXT_LENGTH)
+  return content;
 }

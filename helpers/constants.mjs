@@ -5,6 +5,7 @@ export const WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${BOT_PHONE_NU
 export const MAX_NUMBER_OF_MESSAGES = 30;
 export const SUMMARIZE_SYSTEM_MESSAGE = { content: "Summarize the conversation so far.", role: "system"}
 export const WHATSAPP_MAX_TEXT_LENGTH = 4096;
+export const DALLE_MAX_TEXT_LENGTH = 1000;
 export const STICKER_WAIT_MESSAGE = "Hold tight! your awesome sticker is being generated ⏳";
 export const IMAGE_WAIT_MESSAGE = "Hold tight! I'm generating your image ⏳🖼️";
 export const STARTER_TOKENS_COUNT = 20;
