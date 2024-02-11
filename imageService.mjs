@@ -1,5 +1,4 @@
 import sharp from 'sharp';
-// import { removeBackground } from "@imgly/background-removal-node";
 import axios from "axios";
 import AWS from 'aws-sdk';
 
@@ -12,7 +11,6 @@ const s3 = new AWS.S3({
 });
 
 export const getProcessedSticker = async (url) => {
-  // let buffer = await removeBackgroundOfImage(url);
   let buffer = await convertImageFromUrlToBuffer(url);
   buffer = await convertImageToWebp(buffer);
   const urlOnS3 = await uploadImageToS3(buffer);
@@ -22,13 +20,6 @@ export const getProcessedSticker = async (url) => {
 const convertImageFromUrlToBuffer = async (url) => {
   const response = await axios.get(url, { responseType: 'arraybuffer' });
   return Buffer.from(response.data);
-}
-
-const removeBackgroundOfImage = async (url) => {
-  const blob = await removeBackground(url);
-  const arrayBuffer = await blob.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  return buffer;
 }
 
 const convertImageToWebp = async (buffer) => {

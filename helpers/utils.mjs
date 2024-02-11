@@ -45,6 +45,6 @@ export const extractMediaRequestPrompt = (text, type) => {
       return trimmedText;
   }
 }
-export const generateStickerPrompt = text => {
-  return 'A visual sticker with white stroke of: #FFFFFF.' + text;
-}
+// export const generateStickerPrompt = text => {
+//   return 'A visual sticker with white stroke of: #FFFFFF.' + text;
+// }

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH } from "./helpers/constants.mjs";
-import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
+import { limitTextLength } from "./helpers/utils.mjs";
+// import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
 import { getProcessedSticker } from "./imageService.mjs";
 
 const headers = {
@@ -36,7 +37,7 @@ export const promptGPTSummarize = async (conversation) => {
 
 export const createImage = async (prompt, isSticker) => {
   prompt = limitTextLength(prompt, 1000)
-  prompt = isSticker ? generateStickerPrompt(prompt) : prompt;
+  prompt = isSticker ? await getGPTStickerPrompt(prompt) : prompt;
   const response = await axios.post(
     `${openAIURL}/images/generations`,
       {
@@ -54,4 +55,18 @@ const getSystemMessage = (userName) => {
     role: "system",
     content: `You are a helpful assistant inside WhatsApp, and you are currently assisting a person called ${userName}. You can use emojis if you want to.`
   }
+}
+
+// Here we prompt GPT to write the dalle prompt for the sticker, this proved to give better results
+const getGPTStickerPrompt = async (prompt) => {
+  const GptPromptToDalle = 'Give me a dalle prompt to generate a sticker with a white stroke and a solid background, focus on the visual reprsentation. The sticker is: ' + prompt;
+  const response = await axios.post(
+      `${openAIURL}/chat/completions`,
+      {
+        messages: [{role: "system", content: GptPromptToDalle}],
+        model: "gpt-3.5-turbo",
+      },
+      { headers },
+  );
+  return response.data.choices[0].message.content;
 }
