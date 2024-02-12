@@ -1,5 +1,4 @@
 import { getBody, getAction, handleBadRequest, handleMessageReceived, headers, getWhatsAppBotUrl } from "./helpers/utils.mjs";
-import { getWhatsAppBotUrl } from "./whatsAppBotInfo.mjs";
 import { receiveMessage, verifyWhatsAppWebhook } from "./messageHandler.mjs";
 
 export const handler = async (event, context, callback) => {
@@ -13,7 +12,7 @@ export const handler = async (event, context, callback) => {
           response = getWhatsAppBotUrl();
           break;
       case "message":
-          if (event.httpMethod === "GET") {
+          if (event.requestContext?.http?.method === "GET") {
             response = verifyWhatsAppWebhook(queryStringParams);
             break;
           }
