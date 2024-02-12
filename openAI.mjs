@@ -1,5 +1,6 @@
 import axios from "axios";
-import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH } from "./helpers/constants.mjs";
+import _ from "lodash";
+import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH, DALLE_DEFAULT_ERROR_MESSAGE } from "./helpers/constants.mjs";
 import { limitTextLength } from "./helpers/utils.mjs";
 // import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
 import { getProcessedSticker } from "./imageService.mjs";
@@ -36,19 +37,25 @@ export const promptGPTSummarize = async (conversation) => {
 }
 
 export const createImage = async (prompt, isSticker) => {
-  prompt = limitTextLength(prompt, 1000)
-  prompt = isSticker ? await getGPTStickerPrompt(prompt) : prompt;
-  const response = await axios.post(
-    `${openAIURL}/images/generations`,
+  try {
+    prompt = limitTextLength(prompt, 1000);
+    prompt = isSticker ? await getGPTStickerPrompt(prompt) : prompt;
+    const response = await axios.post(
+      `${openAIURL}/images/generations`,
       {
         prompt,
         size: isSticker ? "512x512" : "1024x1024",
+        model: "dall-e-3" // TEMPORARY to test Rate Limitting
       },
-      { headers },
-  );
-  const url = response.data.data[0].url
-  return isSticker ? await getProcessedSticker(url) : url
-}
+      { headers }
+    );
+    const url = response.data.data[0].url;
+    return isSticker ? await getProcessedSticker(url) : url;
+  } catch (error) {
+    const errorMessage = _.get(error, "response.data.error.code", DALLE_DEFAULT_ERROR_MESSAGE);
+    return errorMessage
+  }
+};
 
 const getSystemMessage = (userName) => {
   return {

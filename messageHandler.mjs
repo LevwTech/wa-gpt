@@ -1,6 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST } from "./helpers/constants.mjs";
+import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, DALLE_RATE_LIMIT_ERROR_MESSAGE, DALLE_DEFAULT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE } from "./helpers/constants.mjs";
 import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.mjs";
 import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
@@ -29,6 +29,14 @@ export const receiveMessage = async (body) => {
     const waitTextMessageBody = { body: IMAGE_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const imageUrl = await createImage(imagePrompt);
+    if (imageUrl === DALLE_RATE_LIMIT_ERROR_MESSAGE) {
+      messageBody = { body: RATE_LIMIT_MESSAGE }
+      await sendMessage(userNumber, 'text', messageBody);
+      return;
+    }
+    if (imageUrl === DALLE_DEFAULT_ERROR_MESSAGE) {
+      throw new Error(DALLE_DEFAULT_ERROR_MESSAGE)
+    }
     messageBody = {
       link: imageUrl,
     };
@@ -39,6 +47,14 @@ export const receiveMessage = async (body) => {
     const waitTextMessageBody = { body: STICKER_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const stickerUrl = await createImage(stickerPrompt, true);
+    if (stickerUrl === DALLE_RATE_LIMIT_ERROR_MESSAGE) {
+      messageBody = { body: RATE_LIMIT_MESSAGE }
+      await sendMessage(userNumber, 'text', messageBody);
+      return;
+    }
+    if (stickerUrl === DALLE_DEFAULT_ERROR_MESSAGE) {
+      throw new Error(DALLE_DEFAULT_ERROR_MESSAGE)
+    }
     messageBody = {
       link: stickerUrl,
     };
@@ -54,7 +70,6 @@ export const receiveMessage = async (body) => {
     messageBody = { body: gptResponse };
   }
   await sendMessage(userNumber, type, messageBody);
-  await saveMessage(userNumber, 'assistant', type === 'text' ? messageBody.body : "Multi-media message");
   if(!isUserAllowed || text === START_MESSAGE) return;
   switch (type) {
     case 'text':
@@ -90,6 +105,7 @@ const sendMessage =  async (to, type, messageBody) => {
   );
   const metaMessageId = _.get(messageSentResponse, 'data.messages[0].id', null);
   if (!metaMessageId) throw new Error('Error sending message');
+  await saveMessage(to, 'assistant', type === 'text' ? messageBody.body : "Multi-media message");
 }
 
 export const verifyWhatsAppWebhook = (query) => {
