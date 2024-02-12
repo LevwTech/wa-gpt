@@ -1,6 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH } from "./helpers/constants.mjs";
+import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH, DALLE_RATE_LIMIT_ERROR_MESSAGE } from "./helpers/constants.mjs";
 import { limitTextLength } from "./helpers/utils.mjs";
 // import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
 import { getProcessedSticker } from "./imageService.mjs";
@@ -52,8 +52,8 @@ export const createImage = async (prompt, isSticker) => {
     const url = response.data.data[0].url;
     return isSticker ? await getProcessedSticker(url) : url;
   } catch (error) {
-    const rateLimitErrorMessage = _.get(error, "response.data.error.code", null);
-    if (rateLimitErrorMessage) return rateLimitErrorMessage;
+    const errorMessage = _.get(error, "response.data.error.code", null);
+    if (errorMessage === DALLE_RATE_LIMIT_ERROR_MESSAGE) return errorMessage;
     else throw new Error(error)
   }
 };
