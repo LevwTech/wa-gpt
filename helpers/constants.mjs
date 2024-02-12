@@ -13,5 +13,4 @@ export const TEXT_TOKEN_COST = 1;
 export const IMAGE_TOKEN_COST = 4;
 export const STICKER_TOKEN_COST = 5;
 export const DALLE_RATE_LIMIT_ERROR_MESSAGE = "rate_limit_exceeded";
-export const DALLE_DEFAULT_ERROR_MESSAGE = "Error creating image";
 export const RATE_LIMIT_MESSAGE = "I'm sorry, I'm currently experiencing a high volume of requests. Please try again later. 🙏";

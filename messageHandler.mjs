@@ -1,6 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, DALLE_RATE_LIMIT_ERROR_MESSAGE, DALLE_DEFAULT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE } from "./helpers/constants.mjs";
+import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, DALLE_RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE } from "./helpers/constants.mjs";
 import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.mjs";
 import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
@@ -34,9 +34,6 @@ export const receiveMessage = async (body) => {
       await sendMessage(userNumber, 'text', messageBody);
       return;
     }
-    if (imageUrl === DALLE_DEFAULT_ERROR_MESSAGE) {
-      throw new Error(DALLE_DEFAULT_ERROR_MESSAGE)
-    }
     messageBody = {
       link: imageUrl,
     };
@@ -51,9 +48,6 @@ export const receiveMessage = async (body) => {
       messageBody = { body: RATE_LIMIT_MESSAGE }
       await sendMessage(userNumber, 'text', messageBody);
       return;
-    }
-    if (stickerUrl === DALLE_DEFAULT_ERROR_MESSAGE) {
-      throw new Error(DALLE_DEFAULT_ERROR_MESSAGE)
     }
     messageBody = {
       link: stickerUrl,
