@@ -38,14 +38,13 @@ export const promptGPTSummarize = async (conversation) => {
 
 export const createImage = async (prompt, isSticker) => {
   try {
-    prompt = limitTextLength(prompt, 1000);
+    prompt = limitTextLength(prompt, DALLE_MAX_TEXT_LENGTH);
     prompt = isSticker ? await getGPTStickerPrompt(prompt) : prompt;
     const response = await axios.post(
       `${openAIURL}/images/generations`,
       {
         prompt,
         size: isSticker ? "512x512" : "1024x1024",
-        model: "dall-e-3" // TEMPORARY to test Rate Limitting
       },
       { headers }
     );
