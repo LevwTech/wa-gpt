@@ -1,6 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, DALLE_RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE } from "./helpers/constants.mjs";
+import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE } from "./helpers/constants.mjs";
 import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.mjs";
 import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
@@ -29,7 +29,7 @@ export const receiveMessage = async (body) => {
     const waitTextMessageBody = { body: IMAGE_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const imageUrl = await createImage(imagePrompt);
-    if (imageUrl === DALLE_RATE_LIMIT_ERROR_MESSAGE) {
+    if (imageUrl === RATE_LIMIT_ERROR_MESSAGE) {
       messageBody = { body: RATE_LIMIT_MESSAGE }
       await sendMessage(userNumber, 'text', messageBody);
       return;
@@ -44,7 +44,7 @@ export const receiveMessage = async (body) => {
     const waitTextMessageBody = { body: STICKER_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const stickerUrl = await createImage(stickerPrompt, true);
-    if (stickerUrl === DALLE_RATE_LIMIT_ERROR_MESSAGE) {
+    if (stickerUrl === RATE_LIMIT_ERROR_MESSAGE) {
       messageBody = { body: RATE_LIMIT_MESSAGE }
       await sendMessage(userNumber, 'text', messageBody);
       return;
@@ -61,6 +61,11 @@ export const receiveMessage = async (body) => {
     type = 'text';
     const conversation = await getMessages(userNumber);
     const gptResponse = await promptGPT(conversation, userName);
+    if (gptResponse === RATE_LIMIT_ERROR_MESSAGE) {
+      messageBody = { body: RATE_LIMIT_MESSAGE }
+      await sendMessage(userNumber, 'text', messageBody);
+      return;
+    }
     messageBody = { body: gptResponse };
   }
   await sendMessage(userNumber, type, messageBody);

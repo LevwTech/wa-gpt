@@ -1,6 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH, DALLE_RATE_LIMIT_ERROR_MESSAGE } from "./helpers/constants.mjs";
+import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH, RATE_LIMIT_ERROR_MESSAGE } from "./helpers/constants.mjs";
 import { limitTextLength } from "./helpers/utils.mjs";
 // import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
 import { getProcessedSticker } from "./imageService.mjs";
@@ -11,17 +11,23 @@ const headers = {
 const openAIURL = "https://api.openai.com/v1";
 
 export const promptGPT = async (conversation, userName) => {
-  const systemMessage = getSystemMessage(userName);
-  const response = await axios.post(
-    `${openAIURL}/chat/completions`,
+  try {
+    const systemMessage = getSystemMessage(userName);
+    const response = await axios.post(
+      `${openAIURL}/chat/completions`,
       {
         messages: [systemMessage, ...conversation],
         model: "gpt-3.5-turbo",
       },
       { headers },
-  );
-  const content = limitTextLength(response.data.choices[0].message.content, WHATSAPP_MAX_TEXT_LENGTH)
-  return content;
+    );
+    const content = limitTextLength(response.data.choices[0].message.content, WHATSAPP_MAX_TEXT_LENGTH);
+    return content;
+  } catch (error) {
+    const errorMessage = _.get(error, "response.data.error.code", null);
+    if (errorMessage === RATE_LIMIT_ERROR_MESSAGE) return errorMessage;
+    else throw new Error(error)
+  }
 }
 
 export const promptGPTSummarize = async (conversation) => {
@@ -52,7 +58,7 @@ export const createImage = async (prompt, isSticker) => {
     return isSticker ? await getProcessedSticker(url) : url;
   } catch (error) {
     const errorMessage = _.get(error, "response.data.error.code", null);
-    if (errorMessage === DALLE_RATE_LIMIT_ERROR_MESSAGE) return errorMessage;
+    if (errorMessage === RATE_LIMIT_ERROR_MESSAGE) return errorMessage;
     else throw new Error(error)
   }
 };
@@ -66,15 +72,20 @@ const getSystemMessage = (userName) => {
 
 // Here we prompt GPT to write the dalle prompt for the sticker, this proved to give better results
 const getGPTStickerPrompt = async (prompt) => {
-  const GptPromptToDalle = 'Give me a short dalle prompt not larger than 1000 characters to generate a sticker with a white stroke and a solid background, focus on visual descriptions. The sticker is: ' + prompt;
-  const response = await axios.post(
+  try {
+    const GptPromptToDalle = 'Give me a short dalle prompt not larger than 1000 characters to generate a sticker with a white stroke and a solid background, focus on visual descriptions. The sticker is: ' + prompt;
+    const response = await axios.post(
       `${openAIURL}/chat/completions`,
       {
         messages: [{role: "system", content: GptPromptToDalle}],
         model: "gpt-3.5-turbo",
       },
       { headers },
-  );
-  const content = limitTextLength(response.data.choices[0].message.content, DALLE_MAX_TEXT_LENGTH)
-  return content;
+    );
+    const content = limitTextLength(response.data.choices[0].message.content, DALLE_MAX_TEXT_LENGTH);
+    return content;
+  } catch (error) {
+    // If something was wrong with the request, we return the original prompt
+    return prompt;
+  }
 }

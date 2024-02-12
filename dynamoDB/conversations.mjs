@@ -27,7 +27,12 @@ export const saveMessage = async (userNumber, role, content) => {
 	messages.push(newMessage);
 	// If the conversation has more than a certain number of messages, we summarize the conversation
 	if (role === "assistant" && messages.length > MAX_NUMBER_OF_MESSAGES) {
-	  messages = await promptGPTSummarize(messages);
+	  try {
+		messages = await promptGPTSummarize(messages);
+	  }
+	  catch (error) {
+		console.log(error);
+	  }
 	}
 	const Item = {
 	  userNumber: { S: userNumber.toString() },
