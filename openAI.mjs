@@ -45,7 +45,6 @@ export const createImage = async (prompt, isSticker) => {
       {
         prompt,
         size: isSticker ? "512x512" : "1024x1024",
-        model: "dall-e-3" // Temporary to test rate limit
       },
       { headers }
     );
