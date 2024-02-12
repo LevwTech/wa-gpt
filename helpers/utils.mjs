@@ -1,5 +1,5 @@
 import { WHATSAPP_URL } from "./constants.mjs";
-export const getAction = (event) => event.requestContext.http.path.split("/")[1];
+export const getAction = (event) => event.rawPath.split("/")[1];
 
 export const getBody = (event) => JSON.parse(event.body);
 
