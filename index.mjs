@@ -1,4 +1,4 @@
-import { getBody, getAction, handleBadRequest, handleMessageReceived, headers} from "./helpers/utils.mjs";
+import { getBody, getAction, handleBadRequest, handleMessageReceived, headers, getWhatsAppBotUrl } from "./helpers/utils.mjs";
 import { getWhatsAppBotUrl } from "./whatsAppBotInfo.mjs";
 import { receiveMessage, verifyWhatsAppWebhook } from "./messageHandler.mjs";
 

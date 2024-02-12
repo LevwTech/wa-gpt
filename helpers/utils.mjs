@@ -1,3 +1,4 @@
+import { WHATSAPP_URL } from "./constants.mjs";
 export const getAction = (event) => event.path.split("/")[1];
 
 export const getBody = (event) => JSON.parse(event.body);
@@ -45,6 +46,11 @@ export const extractMediaRequestPrompt = (text, type) => {
       return trimmedText;
   }
 }
+
 // export const generateStickerPrompt = text => {
 //   return 'A visual sticker with white stroke of: #FFFFFF.' + text;
 // }
+
+export const getWhatsAppBotUrl = (payload) => {
+  return WHATSAPP_URL
+}
