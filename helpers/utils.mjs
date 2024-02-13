@@ -30,20 +30,14 @@ export const limitTextLength = (text, maxLength) => {
   }
 }
 
-export const checkIfMediaRequest = (text, type) => {
-  const trimmedText = text.trim().toLowerCase();
-  return trimmedText.startsWith(`/${type}`);
-}
+export const checkIfMediaRequest = (text, type) => text.startsWith(`/${type}`);
+
 
 export const extractMediaRequestPrompt = (text, type) => {
-  const trimmedText = text.trim();
-  if (trimmedText.toLowerCase().startsWith(`/${type}`)) {
-      return trimmedText.slice(6).trim();
-  }
-  else {
-      return trimmedText;
-  }
+  const prompt = text.slice(`/${type}`.length).trim();
+  return prompt;
 }
+
 
 // export const generateStickerPrompt = text => {
 //   return 'A visual sticker with white stroke of: #FFFFFF.' + text;
