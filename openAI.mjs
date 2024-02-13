@@ -45,7 +45,7 @@ export const promptGPTSummarize = async (conversation) => {
 export const createImage = async (prompt, isSticker) => {
   try {
     prompt = limitTextLength(prompt, DALLE_MAX_TEXT_LENGTH);
-    prompt = isSticker ? await getGPTStickerPrompt(prompt) : prompt;
+    prompt = await getGPTImagePrompt(prompt, isSticker);
     const response = await axios.post(
       `${openAIURL}/images/generations`,
       {
@@ -63,21 +63,22 @@ export const createImage = async (prompt, isSticker) => {
   }
 };
 
-const getSystemMessage = (userName) => {
+const getSystemMessage = (userName, isSticker) => {
   return {
     role: "system",
     content: `You are a helpful assistant inside WhatsApp, and you are currently assisting a person called ${userName}. You can use emojis if you want to.`
   }
 }
 
-// Here we prompt GPT to write the dalle prompt for the sticker, this proved to give better results
-const getGPTStickerPrompt = async (prompt) => {
+// Here we prompt GPT to write the dalle prompt for the image, this proved to give better results
+const getGPTImagePrompt = async (prompt, isSticker) => {
   try {
-    const GptPromptToDalle = 'Give me a short dalle prompt not larger than 1000 characters to generate a sticker with a white stroke and a solid background, focus on visual descriptions. The sticker is: ' + prompt;
+    const GptPromptToDalleSticker = 'Give me a short dalle prompt not larger than 1000 characters to generate a sticker with a white stroke and a solid background, focus on visual descriptions. The sticker is: ' + prompt;
+    const GptPromptToDalleImage = 'Give me a short dalle prompt not larger than 1000 characters to generate a high quality, high resolution, detailed, 4k, 8k image ' + prompt;
     const response = await axios.post(
       `${openAIURL}/chat/completions`,
       {
-        messages: [{role: "system", content: GptPromptToDalle}],
+        messages: [{role: "system", content: isSticker ?  GptPromptToDalleSticker : GptPromptToDalleImage}],
         model: "gpt-3.5-turbo",
       },
       { headers },
