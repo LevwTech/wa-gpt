@@ -32,16 +32,15 @@ export const limitTextLength = (text, maxLength) => {
 
 export const checkIfMediaRequest = (text, type) => {
   const trimmedText = text.trim().toLowerCase();
-  return trimmedText.startsWith(`/${type}`) || trimmedText.startsWith(`${type}`);
+  return trimmedText.startsWith(`/${type}`);
 }
 
 export const extractMediaRequestPrompt = (text, type) => {
   const trimmedText = text.trim();
   if (trimmedText.toLowerCase().startsWith(`/${type}`)) {
       return trimmedText.slice(6).trim();
-  } else if (trimmedText.toLowerCase().startsWith(`${type}`)) {
-      return trimmedText.slice(5).trim();
-  } else {
+  }
+  else {
       return trimmedText;
   }
 }
