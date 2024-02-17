@@ -1,11 +1,11 @@
 import axios from "axios";
 import _ from "lodash";
-import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE } from "./helpers/constants.mjs";
+import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE } from "./helpers/constants.mjs";
 import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.mjs";
 import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
-
+import { getNotAllowedMessage } from "./payment.mjs";
 export const receiveMessage = async (body) => {
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
@@ -17,11 +17,10 @@ export const receiveMessage = async (body) => {
   await saveMessage(userNumber, 'user', text);
   let type;
   let messageBody;
-  const isUserAllowed = user.tokensCount > 0 || user.isSubscribed;
+  const isUserAllowed = user.tokensCount > 0;
   if (!isUserAllowed) {
     type = 'text';
-    // messageBody.body = user.hasSubscribed ? getSubscribeMessage() : getFreeTrialEndedMessage(); // TODO
-    messageBody = { body: "You have no more tokens left. Please buy more tokens." }
+    messageBody = { body: getNotAllowedMessage(user) };
   }
   else if (checkIfMediaRequest(text, 'image')) {
     type = 'image';
@@ -72,7 +71,8 @@ export const receiveMessage = async (body) => {
   if(!isUserAllowed || text === START_MESSAGE) return;
   switch (type) {
     case 'text':
-      await saveUser(userNumber, user.tokensCount - TEXT_TOKEN_COST, user.isSubscribed, user.hasSubscribed);
+      const textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
+      await saveUser(userNumber, user.tokensCount - textCost, user.isSubscribed, user.hasSubscribed);
       break;
     case 'image':
       await saveUser(userNumber, user.tokensCount - IMAGE_TOKEN_COST, user.isSubscribed, user.hasSubscribed);
