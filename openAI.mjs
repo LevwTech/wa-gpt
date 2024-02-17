@@ -66,7 +66,7 @@ export const createImage = async (prompt, isSticker) => {
 const getSystemMessage = (userName, isSticker) => {
   return {
     role: "system",
-    content: `You are a helpful assistant inside WhatsApp, and you are currently assisting a person called ${userName}. You can use emojis if you want to. If a user wants to generate a sticker ask them to use the /sticker command followed by the sticker description, and if a user wants to generate an image ask them to use the /image command followed by the image description.`
+    content: `You are a helpful assistant inside WhatsApp, and you are currently assisting a person called ${userName}. You can use emojis if you want to. If a user wants to generate a sticker ask them to use the /sticker command followed by the sticker description, and if a user wants to generate an image ask them to use the /image command followed by the image description. Keep your answers straight-forward and short.`
   }
 }
 
