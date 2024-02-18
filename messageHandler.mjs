@@ -6,6 +6,7 @@ import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
 import { getNotAllowedMessage } from "./payment.mjs";
+
 export const receiveMessage = async (body) => {
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
