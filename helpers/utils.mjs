@@ -8,9 +8,9 @@ export const handleBadRequest = () => ({
   body: "Bad Request",
 });
 
-export const handleMessageReceived = () => ({
+export const handleNotificationReceived = () => ({
   statusCode: 200,
-  body: "Message Received",
+  body: "Notification Received",
 });
 
 export const headers = {

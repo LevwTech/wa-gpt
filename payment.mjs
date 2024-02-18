@@ -1,4 +1,6 @@
 import { COULDNT_RENEW_SUBSCRIPTION_MESSAGE, TOKENS_LIMIT_EXCEEDED_MESSAGE, GUMROAD_PAYMENT_URL } from './helpers/constants.mjs';
+import { getUser, saveUser } from './dynamoDB/users.mjs';
+
 export const getNotAllowedMessage = (user) => {
     if  (user.isSubscribed) return TOKENS_LIMIT_EXCEEDED_MESSAGE;
     else if (user.hasSubscribed) return COULDNT_RENEW_SUBSCRIPTION_MESSAGE;
@@ -9,5 +11,12 @@ const getFreeTrialEndedMessage = (userNumber) => `Your free trial of WhatsApp AI
 
 export const subsriptionNotificationsHandler = async (body) => {
     // TODO 
+    // sale or subscription_restarted => create user if not exist and update quota, usedTokens to 0, isSubscribed and hasSubscribed to true, and nextRenewalUnixTime to 30 days from now
+    // subscription_updated upgrade => update quota
+    // subscription_updated downgrade => update quota and handle other cases soon
+    // subscription_ended  => update isSubscribed to false and usedTokens = quota
 }
-
+export const checkRenewal = async (user) => {
+    // TODO 
+    // if user.isSubscribed and nextRenewalUnixTime is not 0 and current unix time is more than nextRenewalUnixTime, set nextRenewalUnixTime to nextRenewalUnixTime + 30 days and usedTokens to 0
+}

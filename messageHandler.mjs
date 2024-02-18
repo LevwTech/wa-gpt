@@ -5,7 +5,7 @@ import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.
 import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
-import { getNotAllowedMessage } from "./payment.mjs";
+import { getNotAllowedMessage, checkRenewal } from "./payment.mjs";
 
 export const receiveMessage = async (body) => {
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
@@ -14,7 +14,8 @@ export const receiveMessage = async (body) => {
   // If user sends a message that is not text, we don't want to process it
   if (messageType !== 'text' || !text || !userNumber) return;
   const user = await getUser(userNumber);
-  if (!user) await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false);
+  if (!user) await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false, 0);
+  await checkRenewal(user)
   await saveMessage(userNumber, 'user', text);
   let type;
   let messageBody;
@@ -73,13 +74,13 @@ export const receiveMessage = async (body) => {
   switch (type) {
     case 'text':
       const textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
-      await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed);
+      await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime);
       break;
     case 'image':
-      await saveUser(userNumber, user.usedTokens + IMAGE_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed);
+      await saveUser(userNumber, user.usedTokens + IMAGE_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime);
       break;
     case 'sticker':
-      await saveUser(userNumber, user.usedTokens + STICKER_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed);
+      await saveUser(userNumber, user.usedTokens + STICKER_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime);
       break;
     default:
       break;

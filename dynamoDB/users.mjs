@@ -19,13 +19,14 @@ export const getUser = async userNumber => {
 	return user;
 };
   
-export const saveUser = async (userNumber, usedTokens, quota, isSubscribed, hasSubscribed) => {
+export const saveUser = async (userNumber, usedTokens, quota, isSubscribed, hasSubscribed, nextRenewalUnixTime) => {
 	const Item = {
 	    userNumber: { S: userNumber.toString() },
         usedTokens: { N: usedTokens.toString() },
 		quota: { N: quota.toString() },
         isSubscribed: { BOOL: isSubscribed },
-        hasSubscribed: { BOOL: hasSubscribed }
+        hasSubscribed: { BOOL: hasSubscribed },
+		nextRenewalUnixTime: { N: nextRenewalUnixTime.toString() }
 	};
 	const command = new PutItemCommand({ TableName: usersTableName, Item });
 	await dynamodb.send(command);
