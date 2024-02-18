@@ -1,6 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, STARTER_TOKENS_COUNT, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE } from "./helpers/constants.mjs";
+import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE } from "./helpers/constants.mjs";
 import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.mjs";
 import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
@@ -13,11 +13,11 @@ export const receiveMessage = async (body) => {
   // If user sends a message that is not text, we don't want to process it
   if (messageType !== 'text' || !text || !userNumber) return;
   const user = await getUser(userNumber);
-  if (!user) await saveUser(userNumber, STARTER_TOKENS_COUNT, false, false);
+  if (!user) await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false);
   await saveMessage(userNumber, 'user', text);
   let type;
   let messageBody;
-  const isUserAllowed = user.tokensCount > 0;
+  const isUserAllowed = user.usedTokens < user.quota;
   if (!isUserAllowed) {
     type = 'text';
     messageBody = { body: getNotAllowedMessage(user) };
@@ -72,13 +72,13 @@ export const receiveMessage = async (body) => {
   switch (type) {
     case 'text':
       const textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
-      await saveUser(userNumber, user.tokensCount - textCost, user.isSubscribed, user.hasSubscribed);
+      await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed);
       break;
     case 'image':
-      await saveUser(userNumber, user.tokensCount - IMAGE_TOKEN_COST, user.isSubscribed, user.hasSubscribed);
+      await saveUser(userNumber, user.usedTokens + IMAGE_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed);
       break;
     case 'sticker':
-      await saveUser(userNumber, user.tokensCount - STICKER_TOKEN_COST, user.isSubscribed, user.hasSubscribed);
+      await saveUser(userNumber, user.usedTokens + STICKER_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed);
       break;
     default:
       break;

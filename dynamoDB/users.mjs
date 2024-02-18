@@ -19,11 +19,11 @@ export const getUser = async userNumber => {
 	return user;
 };
   
-export const saveUser = async (userNumber, tokensCount, isSubscribed, hasSubscribed) => {
-    if (tokensCount < 0) tokensCount = 0;
+export const saveUser = async (userNumber, usedTokens, quota, isSubscribed, hasSubscribed) => {
 	const Item = {
 	    userNumber: { S: userNumber.toString() },
-        tokensCount: { N: tokensCount.toString() },
+        usedTokens: { N: usedTokens.toString() },
+		quota: { N: quota.toString() },
         isSubscribed: { BOOL: isSubscribed },
         hasSubscribed: { BOOL: hasSubscribed }
 	};

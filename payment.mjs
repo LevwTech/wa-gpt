@@ -12,7 +12,3 @@ export const getNotAllowedMessage = (user) => {
 export const subsriptionNotificationsHandler = async (body) => {
     // TODO listen for renewals, tier upgrades/downgrades and terminations and upgrade user's tokens and isSubscribed, hasSubscribed fields accordingly
 }
-
-export const handleIfTextIsLicenseKey = async (text, userNumber) => {
-    // TODO check if text is a valid license key and if it is, grant the user their tokens based on the tier and update the isSubscribed, hasSubscribed fields accordingly, and make sure the key can't be used again
-}
