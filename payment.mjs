@@ -1,5 +1,6 @@
 import { COULDNT_RENEW_SUBSCRIPTION_MESSAGE, TOKENS_LIMIT_EXCEEDED_MESSAGE, GUMROAD_PAYMENT_URL } from './helpers/constants.mjs';
 import { getUser, saveUser } from './dynamoDB/users.mjs';
+import { getCurrentUnixTime, getNextRenewalUnixTime } from './helpers/utils.mjs';
 
 export const getNotAllowedMessage = (user) => {
     if  (user.isSubscribed) return TOKENS_LIMIT_EXCEEDED_MESSAGE;
@@ -17,6 +18,7 @@ export const subsriptionNotificationsHandler = async (body) => {
     // subscription_ended  => update isSubscribed to false and usedTokens = quota
 }
 export const checkRenewal = async (user) => {
-    // TODO 
-    // if user.isSubscribed and nextRenewalUnixTime is not 0 and current unix time is more than nextRenewalUnixTime, set nextRenewalUnixTime to nextRenewalUnixTime + 30 days and usedTokens to 0
+    if (user.isSubscribed && user.nextRenewalUnixTime != 0 && getCurrentUnixTime() > user.nextRenewalUnixTime) {
+        await saveUser(user.userNumber, 0, user.quota, user.isSubscribed, user.hasSubscribed, getNextRenewalUnixTime(user.nextRenewalUnixTime));
+    }
 }

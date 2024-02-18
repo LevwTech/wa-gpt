@@ -46,3 +46,7 @@ export const extractMediaRequestPrompt = (text, type) => {
 export const getWhatsAppBotUrl = (payload) => {
   return WHATSAPP_URL
 }
+
+export const getCurrentUnixTime = () => Math.floor(Date.now() / 1000);
+
+export const getNextRenewalUnixTime = (prevRenewalUnixTime) => prevRenewalUnixTime + 30 * 24 * 60 * 60;
