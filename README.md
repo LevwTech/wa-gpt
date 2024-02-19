@@ -26,7 +26,3 @@
 ## Website URL
 
 [whatsapp-assistant.net](https://whatsapp-assistant.net)
-
-## Subscription
-
-Subscribe to our service on Gumroad: [Gumroad Subscription](https://levw.gumroad.com/l/whatsapp)
