@@ -1,7 +1,16 @@
 import { WHATSAPP_URL } from "./constants.mjs";
 export const getAction = (event) => event.rawPath.split("/")[1];
 
-export const getBody = (event) => event.body ? JSON.parse(event.body) : {};
+export const getBody = (event) => {
+  let body;
+  if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
+    const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
+    body = querystring.parse(decodedBody);
+  } else {
+    body = event.body ? JSON.parse(event.body) : {};
+  } 
+  return body;
+}
 
 export const handleBadRequest = () => ({
   statusCode: 400,
