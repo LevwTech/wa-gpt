@@ -32,3 +32,18 @@ export const saveUser = async (userNumber, usedTokens, quota, isSubscribed, hasS
 	const command = new PutItemCommand({ TableName: usersTableName, Item });
 	await dynamodb.send(command);
 }
+
+export const getUserUsingSubscriptionId = async subscriptionId => {
+	// TODO: Implement this function
+	const command = new GetItemCommand({
+	  TableName: usersTableName,
+	  IndexName: "subscriptionId-index",
+	  Key: {
+		subscriptionId: { S: subscriptionId.toString() },
+	  },
+	});
+	const data = await dynamodb.send(command);
+	if(!data.Item) return null;
+	const user = unmarshall(data.Item);
+	return user;
+};

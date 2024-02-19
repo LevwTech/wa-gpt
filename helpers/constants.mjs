@@ -17,3 +17,19 @@ export const RATE_LIMIT_ERROR_MESSAGE = "rate_limit_exceeded";
 export const RATE_LIMIT_MESSAGE = "I'm sorry, I'm currently experiencing a high volume of requests. Please try again later. 🙏";
 export const GUMROAD_PAYMENT_URL = "https://levw.gumroad.com/l/whatsapp";
 export const GUMROAD_UPDATE_SUBSCRIPTION_URL = "https://app.gumroad.com/subscriptions";
+export const TIERS = {
+    "Basic Plan": 50,
+    "Standard Plan (Best Deal)": 200,
+    "Pro Plan": 500,
+}
+export const GUMROAD_RESOURCE_TYPES = {
+    SALE: "sale",
+    SUBSCRIPTION_RESTARTED: "subscription_restarted",
+    SUBSCRIPTION_UPDATED: "subscription_updated",
+    SUBSCRIPTION_ENDED: "subscription_ended",
+    CANCELLATION: "cancellation",
+    REFUND: "refund",
+    DISPUTE: "dispute",
+    DISPUTE_WON: "dispute_won",
+}
+export const unSubscribeResourceTypes = [GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_ENDED, GUMROAD_RESOURCE_TYPES.CANCELLATION, GUMROAD_RESOURCE_TYPES.REFUND, GUMROAD_RESOURCE_TYPES.DISPUTE, GUMROAD_RESOURCE_TYPES.DISPUTE_WON];
