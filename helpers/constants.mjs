@@ -16,6 +16,4 @@ export const STICKER_TOKEN_COST = 1;
 export const RATE_LIMIT_ERROR_MESSAGE = "rate_limit_exceeded";
 export const RATE_LIMIT_MESSAGE = "I'm sorry, I'm currently experiencing a high volume of requests. Please try again later. 🙏";
 export const GUMROAD_PAYMENT_URL = "https://levw.gumroad.com/l/whatsapp";
-export const GUMROAD_UPDATE_SUBSCRIPTION_URL = "https://app.gumroad.com/subscriptions/qa4VGeY7q6C6l10cYPTTow==/manage";
-export const COULDNT_RENEW_SUBSCRIPTION_MESSAGE = `I couldn't renew your subscription. Don't worry! You can still enjoy the features by resubscribing.\n🔗 Renew your subscription here: ${GUMROAD_UPDATE_SUBSCRIPTION_URL}\nExplore and enjoy the full experience! ✨`;
-export const TOKENS_LIMIT_EXCEEDED_MESSAGE = `Hey there! It looks like you've used up all your sticker and image generations 🚀. To keep the creativity flowing, why not consider upgrading to a higher tier?\nYou can easily upgrade by visiting ${GUMROAD_UPDATE_SUBSCRIPTION_URL}. Happy creating!`;
+export const GUMROAD_UPDATE_SUBSCRIPTION_URL = "https://app.gumroad.com/subscriptions";

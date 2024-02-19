@@ -14,7 +14,7 @@ export const receiveMessage = async (body) => {
   // If user sends a message that is not text, we don't want to process it
   if (messageType !== 'text' || !text || !userNumber) return;
   const user = await getUser(userNumber);
-  if (!user) await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false, 0);
+  if (!user) await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false, 0, 0);
   await checkRenewal(user)
   await saveMessage(userNumber, 'user', text);
   let type;
@@ -74,13 +74,13 @@ export const receiveMessage = async (body) => {
   switch (type) {
     case 'text':
       const textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
-      await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime);
+      await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId);
       break;
     case 'image':
-      await saveUser(userNumber, user.usedTokens + IMAGE_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime);
+      await saveUser(userNumber, user.usedTokens + IMAGE_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId);
       break;
     case 'sticker':
-      await saveUser(userNumber, user.usedTokens + STICKER_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime);
+      await saveUser(userNumber, user.usedTokens + STICKER_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId);
       break;
     default:
       break;
