@@ -1,4 +1,4 @@
-import { DynamoDBClient, PutItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 
 const dynamodb = new DynamoDBClient({ region: 'eu-west-1', credentials: {accessKeyId: process.env.AWS_KEY_ID, 
@@ -33,17 +33,15 @@ export const saveUser = async (userNumber, usedTokens, quota, isSubscribed, hasS
 	await dynamodb.send(command);
 }
 
-export const getUserUsingSubscriptionId = async subscriptionId => {
-	// TODO: Implement this function
-	const command = new GetItemCommand({
-	  TableName: usersTableName,
-	  IndexName: "subscriptionId-index",
-	  Key: {
-		subscriptionId: { S: subscriptionId.toString() },
-	  },
-	});
-	const data = await dynamodb.send(command);
-	if(!data.Item) return null;
-	const user = unmarshall(data.Item);
-	return user;
-};
+export const getUserUsingSubscriptionId = async (subscriptionId) => {
+    const command = new QueryCommand({
+        TableName: usersTableName,
+        IndexName: 'subscriptionId-index',
+        KeyConditionExpression: 'subscriptionId = :sid',
+        ExpressionAttributeValues: {
+            ':sid': { S: subscriptionId }
+        }
+    });
+    const data = await dynamodb.send(command);
+    return data.Items.length ? unmarshall(data.Items[0]) : null;
+}

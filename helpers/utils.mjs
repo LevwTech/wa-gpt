@@ -42,12 +42,10 @@ export const limitTextLength = (text, maxLength) => {
 
 export const checkIfMediaRequest = (text, type) => text.startsWith(`/${type}`);
 
-
 export const extractMediaRequestPrompt = (text, type) => {
   const prompt = text.slice(`/${type}`.length).trim();
   return prompt;
 }
-
 
 // export const generateStickerPrompt = text => {
 //   return 'A visual sticker with white stroke of: #FFFFFF.' + text;
