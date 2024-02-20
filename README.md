@@ -27,4 +27,4 @@
 
 ## Website URL
 
-[whatsapp-assistant.net](https://whatsapp-assistant.com)
+[whatsapp-assistant.com](https://whatsapp-assistant.com)
