@@ -49,8 +49,8 @@ export const createImage = async (prompt, isSticker) => {
     const response = await axios.post(
       `${openAIURL}/images/generations`,
       {
+        model: "dall-e-3",
         prompt,
-        size: isSticker ? "512x512" : "1024x1024",
       },
       { headers }
     );
@@ -73,8 +73,8 @@ const getSystemMessage = (userName, isSticker) => {
 // Here we prompt GPT to write the dalle prompt for the image, this proved to give better results
 const getGPTImagePrompt = async (prompt, isSticker) => {
   try {
-    const GptPromptToDalleSticker = 'Give me a short dalle prompt not larger than 1000 characters to generate a sticker with a white stroke and a solid background, focus on visual descriptions. The sticker is: ' + prompt;
-    const GptPromptToDalleImage = 'Give me a short dalle prompt not larger than 1000 characters to generate a high quality, high resolution, detailed, 4k, 8k image ' + prompt;
+    const GptPromptToDalleSticker = 'Give me a short dalle prompt not larger than 4000 characters to generate a sticker with a white stroke and a solid background, focus on visual descriptions. The sticker is: ' + prompt;
+    const GptPromptToDalleImage = 'Give me a short dalle prompt not larger than 4000 characters to generate a high quality, high resolution, detailed, 4k, 8k image ' + prompt;
     const response = await axios.post(
       `${openAIURL}/chat/completions`,
       {

@@ -12,6 +12,7 @@ const s3 = new AWS.S3({
 
 export const getProcessedSticker = async (url) => {
   let buffer = await convertImageFromUrlToBuffer(url);
+  buffer = await convertImageTo512x512(buffer);
   buffer = await convertImageToWebp(buffer);
   const urlOnS3 = await uploadImageToS3(buffer);
   return urlOnS3;
@@ -25,6 +26,11 @@ const convertImageFromUrlToBuffer = async (url) => {
 const convertImageToWebp = async (buffer) => {
     const webpBuffer = await sharp(buffer).webp().toBuffer();
     return webpBuffer
+}
+
+const convertImageTo512x512 = async (buffer) => {
+  const resizedBuffer = await sharp(buffer).resize({ width: 512, height: 512 }).toBuffer();
+  return resizedBuffer;
 }
 
 const uploadImageToS3 = async (buffer) => {
