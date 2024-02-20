@@ -23,7 +23,7 @@
 - Sharp for Image Processing
 - OpenAI GPT and DALL-E
 - Gumroad APIs for payment
-- Github Actions to AWS Automatic Deployments
+- Github Actions for AWS Automatic Deployments
 
 ## Website URL
 
