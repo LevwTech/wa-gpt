@@ -1,6 +1,6 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { saveMessage } from './dynamoDB/conversations';
+import { saveMessage } from './dynamoDB/conversations.mjs';
 
 const sendMessage =  async (to, type, messageBody) => {
     const headers = {

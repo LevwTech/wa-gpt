@@ -17,6 +17,7 @@ const getTokensLimitExceededMessage = (subscriptionId) => `Hey there! It looks l
 
 export const subsriptionNotificationsHandler = async (body) => {
     if (!body) return;
+    
     const subscriptionId = body.subscription_id;
     const userNumber = body.url_params?.userNumber;
     const tier = body.variants?.Tier;
@@ -25,6 +26,7 @@ export const subsriptionNotificationsHandler = async (body) => {
     const isSubsriptionRestarted = body.resource_name == GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_RESTARTED;
     const isSubsriptionUpdated = body.resource_name == GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_UPDATED || body.resource_name == GUMROAD_RESOURCE_TYPES.SALE && !userNumber;
     const isSubsriptionEnded = UNSUBSCRIBE_RESOURCE_TYPES.includes(body.resource_name);
+
     if (isSale) {
         await saveUser(userNumber, 0, quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId);
         await sendMessage(userNumber, 'text', { body: SUBSCRIBED_MESSAGE });
