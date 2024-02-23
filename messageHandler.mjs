@@ -5,7 +5,7 @@ import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.
 import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
-import { getNotAllowedMessage, checkRenewal } from "./payment.mjs";
+import { getNotAllowedMessageBody, checkRenewal } from "./payment.mjs";
 import sendMessage from "./sendMessage.mjs";
 
 export const receiveMessage = async (body) => {
@@ -28,8 +28,8 @@ export const receiveMessage = async (body) => {
   const isUserAllowed = user.usedTokens < user.quota;
 
   if (!isUserAllowed) {
-    type = 'text';
-    messageBody = { body: getNotAllowedMessage(user) };
+    type = 'interactive';
+    messageBody = getNotAllowedMessageBody(user);
   }
   else if (checkIfMediaRequest(text, 'image')) {
     type = 'image';

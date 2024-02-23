@@ -3,17 +3,69 @@ import { getUserUsingSubscriptionId, saveUser } from './dynamoDB/users.mjs';
 import { getCurrentUnixTime, getNextRenewalUnixTime } from './helpers/utils.mjs';
 import sendMessage from './sendMessage.mjs';
 
-export const getNotAllowedMessage = (user) => {
+export const getNotAllowedMessageBody = (user) => {
     if  (user.isSubscribed) return getTokensLimitExceededMessage(user.subscriptionId);
     else if (user.hasSubscribed) return getCouldntRenewSubscriptionMessage(user.subscriptionId);
     else return getFreeTrialEndedMessage(user.userNumber) // User is in free trial
 }
 
-const getFreeTrialEndedMessage = (userNumber) => `Your free trial of WhatsApp AI Assistant has ended. Keep creating stickers 🎨, generating images 🖼️, and getting answers instantly by subscribing now!\n🔗 Pay here: ${GUMROAD_PAYMENT_URL}?userNumber=${userNumber}\nDon't miss out on the full experience! ✨`;
+const getFreeTrialEndedMessage = (userNumber) => {
+    return {
+        type: "cta_url",
+        body: {
+            text: "Your free trial of WhatsApp AI Assistant has ended. Keep creating stickers 🎨, generating images 🖼️, and getting answers instantly by subscribing now!"
+        },
+        footer: {
+            text: "Don't miss out on the full experience! ✨"
+        },
+        action: {
+            name: "cta_url",
+            parameters: {
+                display_text: "Subscribe Now",
+                url: `${GUMROAD_PAYMENT_URL}?userNumber=${userNumber}`
+            }
+        }
+    }
+}
 
-const getCouldntRenewSubscriptionMessage = (subscriptionId) => `I couldn't renew your subscription. Don't worry! You can still enjoy the features by resubscribing.\n🔗 Renew your subscription here: ${GUMROAD_UPDATE_SUBSCRIPTION_URL}/${subscriptionId}/manage \nExplore and enjoy the full experience! ✨`;
+const getCouldntRenewSubscriptionMessage = (subscriptionId) => {
+    return {
+        type: "cta_url",
+        body: {
+            text: "I couldn't renew your subscription. Don't worry! You can still enjoy the features by resubscribing."
+        },
+        footer: {
+            text: "Explore and enjoy the full experience! ✨"
+        },
+        action: {
+            name: "cta_url",
+            parameters: {
+                display_text: "Renew Subscription",
+                url: `${GUMROAD_UPDATE_SUBSCRIPTION_URL}/${subscriptionId}/manage`
+            }
+        }
+    }
 
-const getTokensLimitExceededMessage = (subscriptionId) => `Hey there! It looks like you've used up all your sticker and image generations 🚀. To keep the creativity flowing, why not consider upgrading to a higher tier?\nYou can easily upgrade by visiting ${GUMROAD_UPDATE_SUBSCRIPTION_URL}/${subscriptionId}/manage `;
+};
+
+const getTokensLimitExceededMessage = (subscriptionId) => {
+    return {
+        type: "cta_url",
+        body: {
+            text: "You've used up all your sticker and image generations 🚀 To keep the creativity flowing, why not consider upgrading to a higher tier?"
+        },
+        footer: {
+            text: "Explore and enjoy the full experience! ✨"
+        },
+        action: {
+            name: "cta_url",
+            parameters: {
+                display_text: "Upgrade Subscription",
+                url: `${GUMROAD_UPDATE_SUBSCRIPTION_URL}/${subscriptionId}/manage`
+            }
+        }
+    }
+};
 
 export const subsriptionNotificationsHandler = async (body) => {
     if (!body) return;
