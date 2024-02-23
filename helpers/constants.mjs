@@ -1,7 +1,8 @@
-export const START_MESSAGE = "Start using WhatsApp AI Assistant";
-export const START_MESSAGE_REPLY = "Hello! 👋 I am your WhatsApp AI Assistant 🤖 I can help you with your queries. Please type your query and I will try to help you. You can generate images 🖼️ or stickers using the /image and /sticker commands"
+export const START_MESSAGE = "Hey, what can you do?";
+export const START_MESSAGE_REPLY = "Hello! 👋 I'm your WhatsApp AI Assistant! I'm here to assist you with any questions you have and help with generating images and stickers. Simply use the /image and /sticker commands followed by a description, and I'll take care of the rest! Feel free to ask me anything 🤖✨";
+export const SUBSCRIBED_MESSAGE = "Thank you for subscribing!  ✨ I'm here to help you navigate through questions and create images and stickers for you. To kick things off, just type /image or /sticker followed by a description, and I'll work my magic. Let's get started! 🚀🤖";
 export const BOT_PHONE_NUMBER = "+201064134160";
-export const WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${BOT_PHONE_NUMBER}&text=${START_MESSAGE.replace(/ /g, "%20")}`;
+export const WHATSAPP_URL = encodeURIComponent(`https://api.whatsapp.com/send/?phone=${BOT_PHONE_NUMBER}&text=${START_MESSAGE}`);
 export const MAX_NUMBER_OF_MESSAGES = 30;
 export const SUMMARIZE_SYSTEM_MESSAGE = { content: "Summarize the conversation so far.", role: "system"}
 export const WHATSAPP_MAX_TEXT_LENGTH = 4096;
@@ -31,5 +32,5 @@ export const GUMROAD_RESOURCE_TYPES = {
     REFUND: "refund",
     DISPUTE: "dispute",
     DISPUTE_WON: "dispute_won",
-}
-export const unSubscribeResourceTypes = [GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_ENDED, GUMROAD_RESOURCE_TYPES.CANCELLATION, GUMROAD_RESOURCE_TYPES.REFUND, GUMROAD_RESOURCE_TYPES.DISPUTE, GUMROAD_RESOURCE_TYPES.DISPUTE_WON];
+};
+export const UNSUBSCRIBE_RESOURCE_TYPES = [GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_ENDED, GUMROAD_RESOURCE_TYPES.CANCELLATION, GUMROAD_RESOURCE_TYPES.REFUND, GUMROAD_RESOURCE_TYPES.DISPUTE, GUMROAD_RESOURCE_TYPES.DISPUTE_WON];

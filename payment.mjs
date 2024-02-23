@@ -1,6 +1,7 @@
-import {  GUMROAD_UPDATE_SUBSCRIPTION_URL, GUMROAD_PAYMENT_URL, TIERS, GUMROAD_RESOURCE_TYPES, unSubscribeResourceTypes } from './helpers/constants.mjs';
+import {  GUMROAD_UPDATE_SUBSCRIPTION_URL, GUMROAD_PAYMENT_URL, TIERS, GUMROAD_RESOURCE_TYPES, UNSUBSCRIBE_RESOURCE_TYPES, SUBSCRIBED_MESSAGE } from './helpers/constants.mjs';
 import { getUserUsingSubscriptionId, saveUser } from './dynamoDB/users.mjs';
 import { getCurrentUnixTime, getNextRenewalUnixTime } from './helpers/utils.mjs';
+import sendMessage from './sendMessage.mjs';
 
 export const getNotAllowedMessage = (user) => {
     if  (user.isSubscribed) return getTokensLimitExceededMessage(user.subscriptionId);
@@ -23,13 +24,15 @@ export const subsriptionNotificationsHandler = async (body) => {
     const isSale = body.resource_name == GUMROAD_RESOURCE_TYPES.SALE && userNumber;
     const isSubsriptionRestarted = body.resource_name == GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_RESTARTED;
     const isSubsriptionUpdated = body.resource_name == GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_UPDATED || body.resource_name == GUMROAD_RESOURCE_TYPES.SALE && !userNumber;
-    const isSubsriptionEnded = unSubscribeResourceTypes.includes(body.resource_name);
+    const isSubsriptionEnded = UNSUBSCRIBE_RESOURCE_TYPES.includes(body.resource_name);
     if (isSale) {
         await saveUser(userNumber, 0, quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId);
+        await sendMessage(userNumber, 'text', { body: SUBSCRIBED_MESSAGE });
     }
     else if (isSubsriptionRestarted) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
         await saveUser(user.userNumber, 0, quota || user.quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId);
+        await sendMessage(userNumber, 'text', { body: SUBSCRIBED_MESSAGE });
     }
     else if (isSubsriptionUpdated) {
         const user = await getUserUsingSubscriptionId(subscriptionId);

@@ -1,4 +1,3 @@
-import axios from "axios";
 import _ from "lodash";
 import uuid4 from "uuid4";
 import { START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE } from "./helpers/constants.mjs";
@@ -7,6 +6,7 @@ import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
 import { getNotAllowedMessage, checkRenewal } from "./payment.mjs";
+import sendMessage from "./sendMessage.mjs";
 
 export const receiveMessage = async (body) => {
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
@@ -74,7 +74,7 @@ export const receiveMessage = async (body) => {
   }
 
   await sendMessage(userNumber, type, messageBody);
-  
+
   if(!isUserAllowed) return;
   switch (type) {
     case 'text':
@@ -90,28 +90,6 @@ export const receiveMessage = async (body) => {
     default:
       break;
   }
-}
-
-const sendMessage =  async (to, type, messageBody) => {
-  const headers = {
-    Authorization: `Bearer ${process.env.WHATSAPP_SYSTEM_ACCESS_TOKEN}`,
-  };
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const messageParams = {
-    messaging_product: 'whatsapp',
-    to,
-    recipient_type: 'individual',
-    type,
-    [type]: messageBody,
-  };
-  const messageSentResponse = await axios.post(
-    `https://graph.facebook.com/v17.0/${phoneNumberId}/messages`,
-    messageParams,
-    { headers },
-  );
-  const metaMessageId = _.get(messageSentResponse, 'data.messages[0].id', null);
-  if (!metaMessageId) throw new Error('Error sending message');
-  await saveMessage(to, 'assistant', type === 'text' ? messageBody.body : "Multi-media message");
 }
 
 export const verifyWhatsAppWebhook = (query) => {
