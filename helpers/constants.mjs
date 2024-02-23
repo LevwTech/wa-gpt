@@ -15,7 +15,7 @@ export const IMAGE_TOKEN_COST = 1;
 export const STICKER_TOKEN_COST = 1;
 export const RATE_LIMIT_ERROR_MESSAGE = "rate_limit_exceeded";
 export const RATE_LIMIT_MESSAGE = "I'm sorry, I'm currently experiencing a high volume of requests. Please try again later. 🙏";
-export const GUMROAD_PAYMENT_URL = "https://levw.gumroad.com/l/whatsapp";
+export const GUMROAD_PAYMENT_URL = "https://whatsapp-assistant.com/buy";
 export const GUMROAD_UPDATE_SUBSCRIPTION_URL = "https://app.gumroad.com/subscriptions";
 export const TIERS = {
     "Basic Plan": 50,
