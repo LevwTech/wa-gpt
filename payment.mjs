@@ -32,7 +32,7 @@ export const subsriptionNotificationsHandler = async (body) => {
     else if (isSubsriptionRestarted) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
         await saveUser(user.userNumber, 0, quota || user.quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId);
-        await sendMessage(userNumber, 'text', { body: SUBSCRIBED_MESSAGE });
+        await sendMessage(user.userNumber, 'text', { body: SUBSCRIBED_MESSAGE });
     }
     else if (isSubsriptionUpdated) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
