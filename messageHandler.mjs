@@ -1,7 +1,7 @@
 import axios from "axios";
 import _ from "lodash";
 import uuid4 from "uuid4";
-import { START_MESSAGE, START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE } from "./helpers/constants.mjs";
+import { START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE } from "./helpers/constants.mjs";
 import { checkIfMediaRequest, extractMediaRequestPrompt } from "./helpers/utils.mjs";
 import { promptGPT, createImage } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
@@ -11,16 +11,22 @@ import { getNotAllowedMessage, checkRenewal } from "./payment.mjs";
 export const receiveMessage = async (body) => {
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
+
   const { userName, userNumber, messageType, text } = extractMessageInfo(body);
+
   // If user sends a message that is not text, we don't want to process it
   if (messageType !== 'text' || !text || !userNumber) return;
+
   const user = await getUser(userNumber);
-  if (!user) await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false, 0, uuid4());
-  await checkRenewal(user)
+  if (!user) await addNewUser(userNumber);
+
+  await checkRenewal(user);
   await saveMessage(userNumber, 'user', text);
+
   let type;
   let messageBody;
   const isUserAllowed = user.usedTokens < user.quota;
+
   if (!isUserAllowed) {
     type = 'text';
     messageBody = { body: getNotAllowedMessage(user) };
@@ -55,10 +61,6 @@ export const receiveMessage = async (body) => {
       link: stickerUrl,
     };
   }
-  else if (text === START_MESSAGE) {
-    type = 'text';
-    messageBody = { body: START_MESSAGE_REPLY }
-  }
   else {
     type = 'text';
     const conversation = await getMessages(userNumber);
@@ -70,8 +72,10 @@ export const receiveMessage = async (body) => {
     }
     messageBody = { body: gptResponse };
   }
+
   await sendMessage(userNumber, type, messageBody);
-  if(!isUserAllowed || text === START_MESSAGE) return;
+  
+  if(!isUserAllowed) return;
   switch (type) {
     case 'text':
       const textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
@@ -122,3 +126,8 @@ const extractMessageInfo = (body) => {
   const text = _.get(body, 'entry[0].changes[0].value.messages[0].text.body', null);
   return { userName, userNumber, messageType, text}
 };
+
+const addNewUser = async (userNumber) => {
+  await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false, 0, uuid4());
+  await sendMessage(userNumber, 'text', { body: START_MESSAGE_REPLY });
+}
