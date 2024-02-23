@@ -23,7 +23,9 @@
 - Sharp for Image Processing
 - OpenAI GPT and DALL-E
 - Gumroad APIs for payment
+- Github Actions for AWS Automatic Deployments
+- Next.js for Frontend
 
 ## Website URL
 
-[whatsapp-assistant.net](https://whatsapp-assistant.net)
+[whatsapp-assistant.com](https://whatsapp-assistant.com)
