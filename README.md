@@ -24,6 +24,7 @@
 - OpenAI GPT and DALL-E
 - Gumroad APIs for payment
 - Github Actions for AWS Automatic Deployments
+- Next.js for Frontend
 
 ## Website URL
 
