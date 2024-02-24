@@ -14,13 +14,19 @@ export const getBody = (event) => {
 }
 const parseFormUrlEncoded = (bodyString) => {
   const parsedBody = querystring.parse(bodyString);
-  Object.keys(parsedBody).forEach((key) => {
+  const parsedObject = {};
+  for (let key in parsedBody) {
     const value = parsedBody[key];
-    if (typeof value === 'string' && value.includes('=')) {
-      parsedBody[key] = parseFormUrlEncoded(value);
+    if (typeof value === 'string') {
+      parsedObject[key] = value;
+    } else if (Array.isArray(value)) {
+      parsedObject[key] = value.map(item => parseFormUrlEncoded(item));
+    } else {
+      parsedObject[key] = parseFormUrlEncoded(value);
     }
-  });
-  return parsedBody;
+  }
+
+  return parsedObject;
 }
 
 export const handleBadRequest = () => ({
