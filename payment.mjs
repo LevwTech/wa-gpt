@@ -1,4 +1,4 @@
-import {  GUMROAD_UPDATE_SUBSCRIPTION_URL, GUMROAD_PAYMENT_URL, TIERS, GUMROAD_RESOURCE_TYPES, UNSUBSCRIBE_RESOURCE_TYPES, SUBSCRIBED_MESSAGE } from './helpers/constants.mjs';
+import {  GUMROAD_UPDATE_SUBSCRIPTION_URL, GUMROAD_PAYMENT_URL, TIERS, GUMROAD_RESOURCE_TYPES, UNSUBSCRIBE_RESOURCE_TYPES, SUBSCRIBED_MESSAGE, UPGRADED_SUBSCRIPTION_MESSAGE } from './helpers/constants.mjs';
 import { getUserUsingSubscriptionId, saveUser } from './dynamoDB/users.mjs';
 import { getCurrentUnixTime, getNextRenewalUnixTime } from './helpers/utils.mjs';
 import sendMessage from './sendMessage.mjs';
@@ -94,12 +94,11 @@ export const subsriptionNotificationsHandler = async (body) => {
         const newTier = _.get(body, 'new_plan.tier.name', null);
         const newQuota = TIERS[newTier];
         await saveUser(user.userNumber, user.usedTokens, newQuota || quota, true, true, user.nextRenewalUnixTime, subscriptionId);
-        // TODO SEND MESSAGE
+        await sendMessage(user.userNumber, 'text', { body: UPGRADED_SUBSCRIPTION_MESSAGE });
     }
     else if (isSubsriptionEnded) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
         await saveUser(user.userNumber, user.quota, user.quota, false, true, 0, subscriptionId);
-        // TODO SEND MESSAGE ?
     }
     else return;
 }

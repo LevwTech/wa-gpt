@@ -1,6 +1,7 @@
 export const START_MESSAGE = "Hey, what can you do?";
 export const START_MESSAGE_REPLY = "I'm your WhatsApp AI Assistant! I'm here to assist you with any questions you have and help with generating images and stickers. Simply use the /image and /sticker commands followed by a description, and I'll take care of the rest! Feel free to ask me anything 🤖✨";
 export const SUBSCRIBED_MESSAGE = "Thank you for subscribing! ✨ I'm here to help you navigate through questions and create images and stickers for you. To kick things off, just type /image or /sticker followed by a description, and I'll work my magic. Let's get started! 🚀🤖";
+export const UPGRADED_SUBSCRIPTION_MESSAGE = "Congratulations on upgrading your subscription! 🎉 Get ready to enjoy even more image and sticker generation features. I'm here to enhance your experience and assist you in creating captivating visuals. Feel free to explore new possibilities by typing /image or /sticker followed by a description. Let's elevate your creativity to new heights! 🚀✨";
 export const BOT_PHONE_NUMBER = "+201064134160";
 export const WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${BOT_PHONE_NUMBER}&text=${START_MESSAGE.replace(/ /g, "%20").replace("?","%3F")}`;
 export const MAX_NUMBER_OF_MESSAGES = 30;
