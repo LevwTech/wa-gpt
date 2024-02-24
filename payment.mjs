@@ -2,6 +2,7 @@ import {  GUMROAD_UPDATE_SUBSCRIPTION_URL, GUMROAD_PAYMENT_URL, TIERS, GUMROAD_R
 import { getUserUsingSubscriptionId, saveUser } from './dynamoDB/users.mjs';
 import { getCurrentUnixTime, getNextRenewalUnixTime } from './helpers/utils.mjs';
 import sendMessage from './sendMessage.mjs';
+import _ from 'lodash';
 
 export const getNotAllowedMessageBody = (user) => {
     if  (user.isSubscribed) return getTokensLimitExceededMessage(user.subscriptionId);
@@ -71,8 +72,8 @@ export const subsriptionNotificationsHandler = async (body) => {
     if (!body) return;
     
     const subscriptionId = body.subscription_id;
-    const userNumber = body.url_params?.userNumber;
-    const tier = body.variants?.Tier;
+    const userNumber = _.get(body, 'url_params.userNumber', null);
+    const tier = _.get(body, 'variants.Tier', null);
     const quota = TIERS[tier];
     const isSale = body.resource_name == GUMROAD_RESOURCE_TYPES.SALE && userNumber;
     const isSubsriptionRestarted = body.resource_name == GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_RESTARTED;
@@ -90,13 +91,15 @@ export const subsriptionNotificationsHandler = async (body) => {
     }
     else if (isSubsriptionUpdated) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
-        const newTier = body.new_plan?.tier?.name
+        const newTier = _.get(body, 'new_plan.tier.name', null);
         const newQuota = TIERS[newTier];
         await saveUser(user.userNumber, user.usedTokens, newQuota || quota, true, true, user.nextRenewalUnixTime, subscriptionId);
+        // TODO SEND MESSAGE
     }
     else if (isSubsriptionEnded) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
         await saveUser(user.userNumber, user.quota, user.quota, false, true, 0, subscriptionId);
+        // TODO SEND MESSAGE ?
     }
     else return;
 }
