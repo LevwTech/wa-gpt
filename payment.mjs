@@ -77,7 +77,7 @@ export const subsriptionNotificationsHandler = async (body) => {
     const quota = TIERS[tier];
     const isSale = body.resource_name == GUMROAD_RESOURCE_TYPES.SALE && userNumber;
     const isSubsriptionRestarted = body.resource_name == GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_RESTARTED;
-    const isSubsriptionUpdated = body.resource_name == GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_UPDATED || body.resource_name == GUMROAD_RESOURCE_TYPES.SALE && !userNumber;
+    const isSubsriptionUpdated = body.resource_name == GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_UPDATED;
     const isSubsriptionEnded = UNSUBSCRIBE_RESOURCE_TYPES.includes(body.resource_name);
 
     if (isSale) {
@@ -93,7 +93,7 @@ export const subsriptionNotificationsHandler = async (body) => {
         const user = await getUserUsingSubscriptionId(subscriptionId);
         const newTier = _.get(body, 'new_plan.tier.name', null);
         const newQuota = TIERS[newTier];
-        await saveUser(user.userNumber, user.usedTokens, newQuota || quota, true, true, user.nextRenewalUnixTime, subscriptionId);
+        await saveUser(user.userNumber, user.usedTokens, newQuota, true, true, user.nextRenewalUnixTime, subscriptionId);
         await sendMessage(user.userNumber, 'text', { body: UPGRADED_SUBSCRIPTION_MESSAGE });
     }
     else if (isSubsriptionEnded) {
