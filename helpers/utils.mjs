@@ -6,37 +6,21 @@ export const getBody = (event) => {
   let body;
   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
     const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-    body = body = parseNestedQueryString(decodedBody);
+    body = parseFormUrlEncoded(decodedBody);
   } else {
     body = event.body ? JSON.parse(event.body) : {};
   } 
   return body;
 }
-const parseNestedQueryString = (queryString) => {
-  const nestedObject = {};
-  const queryParams = querystring.parse(queryString);
-
-  for (let key in queryParams) {
-    const value = queryParams[key];
-    setNestedProperty(nestedObject, key, value);
-  }
-
-  return nestedObject;
-}
-
-const setNestedProperty = (obj, keyPath, value) => {
-  const keys = keyPath.split('.');
-  let nestedObj = obj;
-
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    if (i === keys.length - 1) {
-      nestedObj[key] = value;
-    } else {
-      nestedObj[key] = nestedObj[key] || {};
-      nestedObj = nestedObj[key];
+const parseFormUrlEncoded = (bodyString) => {
+  const parsedBody = querystring.parse(bodyString);
+  Object.keys(parsedBody).forEach((key) => {
+    const value = parsedBody[key];
+    if (typeof value === 'string' && value.includes('=')) {
+      parsedBody[key] = parseFormUrlEncoded(value);
     }
-  }
+  });
+  return parsedBody;
 }
 
 export const handleBadRequest = () => ({
