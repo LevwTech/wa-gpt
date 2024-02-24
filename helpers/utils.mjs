@@ -12,21 +12,37 @@ export const getBody = (event) => {
   } 
   return body;
 }
-const parseFormUrlEncoded = (bodyString) => {
-  const parsedBody = querystring.parse(bodyString);
-  const parsedObject = {};
-  for (let key in parsedBody) {
-    const value = parsedBody[key];
-    if (typeof value === 'string') {
-      parsedObject[key] = value;
-    } else if (Array.isArray(value)) {
-      parsedObject[key] = value.map(item => parseFormUrlEncoded(item));
-    } else {
-      parsedObject[key] = parseFormUrlEncoded(value);
-    }
-  }
 
-  return parsedObject;
+const parseFormUrlEncoded = (bodyString) => {
+  const params = {};
+  const keyValuePairs = bodyString.split('&');
+  keyValuePairs.forEach(keyValuePair => {
+    const [key, value] = keyValuePair.split('=');
+    const decodedKey = decodeURIComponent(key);
+    const decodedValue = decodeURIComponent(value);
+    if (decodedKey.includes('[')) {
+      const keys = decodedKey.split(/\[|\]/).filter(Boolean);
+      let obj = params;
+      for (let i = 0; i < keys.length; i++) {
+        const currentKey = keys[i];
+        if (i === keys.length - 1) {
+          if (Array.isArray(obj[currentKey])) {
+            obj[currentKey].push(decodedValue);
+          } else if (obj[currentKey]) {
+            obj[currentKey] = [obj[currentKey], decodedValue];
+          } else {
+            obj[currentKey] = decodedValue;
+          }
+        } else {
+          obj[currentKey] = obj[currentKey] || {};
+          obj = obj[currentKey];
+        }
+      }
+    } else {
+      params[decodedKey] = decodedValue;
+    }
+  });
+  return params;
 }
 
 export const handleBadRequest = () => ({
