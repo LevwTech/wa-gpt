@@ -1,5 +1,5 @@
 import { getBody, getAction, handleBadRequest, handleNotificationReceived, headers, getWhatsAppBotUrl } from "./helpers/utils.mjs";
-import { receiveMessage, verifyWhatsAppWebhook } from "./messageHandler.mjs";
+import { handleMessage, verifyWhatsAppWebhook } from "./messageHandler.mjs";
 import { subsriptionNotificationsHandler } from "./payment.mjs";
 
 export const handler = async (event, context, callback) => {
@@ -12,18 +12,12 @@ export const handler = async (event, context, callback) => {
       case "phone":
           response = getWhatsAppBotUrl();
           break;
-      case "message":
-          if (event.requestContext?.http?.method === "GET") {
-            response = verifyWhatsAppWebhook(queryStringParams);
-            break;
-          }
-        await receiveMessage(body);
-        return handleNotificationReceived();
       case "subscription":
         await subsriptionNotificationsHandler(body);
         return handleNotificationReceived();
       default:  
-        return handleBadRequest();
+        await handleMessage(body);
+        return handleNotificationReceived();
     }
     return {
       statusCode: 200,

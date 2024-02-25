@@ -8,7 +8,7 @@ import { saveUser, getUser } from "./dynamoDB/users.mjs";
 import { getNotAllowedMessageBody, checkRenewal } from "./payment.mjs";
 import sendMessage from "./sendMessage.mjs";
 
-export const receiveMessage = async (body) => {
+export const handleMessage = async (body) => {
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
 
