@@ -7,6 +7,11 @@ export const handler = async (event, context, callback) => {
     const action = getAction(event);
     const body = getBody(event);
     const queryStringParams = event.queryStringParameters;
+    return {
+      statusCode: 200,
+      headers,
+      body
+    };
     let response;
     switch (action) {
       case "phone":
