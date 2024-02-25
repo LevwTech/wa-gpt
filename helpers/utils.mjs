@@ -1,6 +1,6 @@
 import querystring from "querystring";
 import { WHATSAPP_URL } from "./constants.mjs";
-export const getAction = (event) => event.rawPath.split("/")[1];
+export const getAction = (event) => event.rawPath?.split("/")[1];
 
 export const getBody = (event) => {
   let body;
