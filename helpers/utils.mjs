@@ -4,7 +4,7 @@ export const getAction = (event) => event.rawPath?.split("/")[1];
 
 export const getBody = (event) => {
   let body;
-  if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
+  if (event.headers?.['content-type'] === 'application/x-www-form-urlencoded') {
     const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
     body = parseFormUrlEncoded(decodedBody);
   } else {
