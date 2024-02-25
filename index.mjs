@@ -1,12 +1,11 @@
-import { getBody, getAction, handleBadRequest, handleNotificationReceived, headers, getWhatsAppBotUrl } from "./helpers/utils.mjs";
-import { handleMessage, verifyWhatsAppWebhook } from "./messageHandler.mjs";
+import { getBody, getAction, handleNotificationReceived, headers, getWhatsAppBotUrl } from "./helpers/utils.mjs";
+import { handleMessage } from "./messageHandler.mjs";
 import { subsriptionNotificationsHandler } from "./payment.mjs";
 
 export const handler = async (event, context, callback) => {
   try {
     const action = getAction(event);
     const body = getBody(event);
-    const queryStringParams = event.queryStringParameters;
     let response;
     switch (action) {
       case "phone":
