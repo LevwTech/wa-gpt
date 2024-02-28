@@ -93,4 +93,11 @@ export const getWhatsAppBotUrl = (lang) => {
 
 export const getCurrentUnixTime = () => Math.floor(Date.now() / 1000);
 
+export const hasBeen4Hours = (unixTimestamp) => {
+  const currentUnixTime = getCurrentUnixTime();
+  const fourHoursInSeconds = 4 * 60 * 60;
+  
+  return (currentUnixTime - unixTimestamp) >= fourHoursInSeconds;
+};
+
 export const getNextRenewalUnixTime = (prevRenewalUnixTime) => prevRenewalUnixTime + 30 * 24 * 60 * 60;

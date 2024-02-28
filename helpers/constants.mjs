@@ -21,6 +21,7 @@ export const IMAGE_TOKEN_COST = 1;
 export const STICKER_TOKEN_COST = 1;
 export const RATE_LIMIT_ERROR_MESSAGE = "rate_limit_exceeded";
 export const RATE_LIMIT_MESSAGE = "I'm sorry, I'm currently experiencing a high volume of requests. Please try again later. 🙏";
+export const UNLIMITED_PLAN_RATE_LIMIT = "You've been generating a lot of stickers and images lately. Please try again in a few hours. 🕒🙏";
 export const GUMROAD_PAYMENT_URL = "https://levw.gumroad.com/l/whatsapp";
 export const GUMROAD_UPDATE_SUBSCRIPTION_URL = "https://app.gumroad.com/subscriptions";
 export const TIERS = {
@@ -28,6 +29,7 @@ export const TIERS = {
     "Standard Plan (Best Deal)": 120,
     "Pro Plan": 400,
 }
+export const PRO_PLAN_QUOTA = 400;
 export const GUMROAD_RESOURCE_TYPES = {
     SALE: "sale",
     SUBSCRIPTION_RESTARTED: "subscription_restarted",

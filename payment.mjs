@@ -81,29 +81,29 @@ export const subsriptionNotificationsHandler = async (body) => {
     const isSubsriptionEnded = UNSUBSCRIBE_RESOURCE_TYPES.includes(body.resource_name);
 
     if (isSale) {
-        await saveUser(userNumber, 0, quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId);
+        await saveUser(userNumber, 0, quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId, 0);
         await sendMessage(userNumber, 'text', { body: SUBSCRIBED_MESSAGE });
     }
     else if (isSubsriptionRestarted) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
-        await saveUser(user.userNumber, 0, quota || user.quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId);
+        await saveUser(user.userNumber, 0, quota || user.quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId, user.lastMediaGenerationTime);
         await sendMessage(user.userNumber, 'text', { body: SUBSCRIBED_MESSAGE });
     }
     else if (isSubsriptionUpdated) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
         const newTier = _.get(body, 'new_plan.tier.name', null);
         const newQuota = TIERS[newTier];
-        await saveUser(user.userNumber, user.usedTokens, newQuota, true, true, user.nextRenewalUnixTime, subscriptionId);
+        await saveUser(user.userNumber, user.usedTokens, newQuota, true, true, user.nextRenewalUnixTime, subscriptionId, user.lastMediaGenerationTime);
         await sendMessage(user.userNumber, 'text', { body: UPGRADED_SUBSCRIPTION_MESSAGE });
     }
     else if (isSubsriptionEnded) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
-        await saveUser(user.userNumber, user.quota, user.quota, false, true, 0, subscriptionId);
+        await saveUser(user.userNumber, user.quota, user.quota, false, true, 0, subscriptionId, user.lastMediaGenerationTime);
     }
     else return;
 }
 export const checkRenewal = async (user) => {
     if (user.isSubscribed && user.nextRenewalUnixTime != 0 && getCurrentUnixTime() > user.nextRenewalUnixTime) {
-        await saveUser(user.userNumber, 0, user.quota, user.isSubscribed, user.hasSubscribed, getNextRenewalUnixTime(user.nextRenewalUnixTime), user.subscriptionId);
+        await saveUser(user.userNumber, 0, user.quota, user.isSubscribed, user.hasSubscribed, getNextRenewalUnixTime(user.nextRenewalUnixTime), user.subscriptionId, user.lastMediaGenerationTime);
     }
 }
