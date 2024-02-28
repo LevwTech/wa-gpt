@@ -48,33 +48,41 @@ export const getBody = (event) => {
 
 const parseFormUrlEncoded = (bodyString) => {
   const params = {};
-  const keyValuePairs = bodyString.split('&');
-  keyValuePairs.forEach(keyValuePair => {
-    const parts = keyValuePair.split('=');
-    const decodedKey = decodeURIComponent(parts[0]);
-    const decodedValue = decodeURIComponent(parts[1]);
 
-    // Handle nested objects using an accumulator approach
-    let currentObject = params;
-    const keys = decodedKey.split(/\[|\]/).filter(Boolean);
+  const decode = (str) => {
+    return decodeURIComponent(str.replace(/\+/g, ' '));
+  };
+
+  bodyString.split('&').forEach(keyValuePair => {
+    const [key, value] = keyValuePair.split('=');
+    const decodedKey = decode(key);
+    const decodedValue = decode(value);
+
+    const keys = decodedKey.split('.');
+    let currentParams = params;
+
     for (let i = 0; i < keys.length; i++) {
-      const currentKey = keys[i];
-      if (i === keys.length - 1) {
-        // Last key, assign value or add to array if necessary
-        if (Array.isArray(currentObject[currentKey])) {
-          currentObject[currentKey].push(decodedValue);
-        } else if (currentObject[currentKey]) {
-          currentObject[currentKey] = [currentObject[currentKey], decodedValue];
+      const key = keys[i];
+      const isLastKey = i === keys.length - 1;
+
+      if (isLastKey) {
+        if (currentParams[key] !== undefined) {
+          if (!Array.isArray(currentParams[key])) {
+            currentParams[key] = [currentParams[key]];
+          }
+          currentParams[key].push(decodedValue);
         } else {
-          currentObject[currentKey] = decodedValue;
+          currentParams[key] = decodedValue;
         }
       } else {
-        // Create nested object if it doesn't exist
-        currentObject[currentKey] = currentObject[currentKey] || {};
-        currentObject = currentObject[currentKey];
+        if (!currentParams[key]) {
+          currentParams[key] = {};
+        }
+        currentParams = currentParams[key];
       }
     }
   });
+
   return params;
 }
 
