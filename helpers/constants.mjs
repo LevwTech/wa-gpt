@@ -24,9 +24,9 @@ export const RATE_LIMIT_MESSAGE = "I'm sorry, I'm currently experiencing a high 
 export const GUMROAD_PAYMENT_URL = "https://levw.gumroad.com/l/whatsapp";
 export const GUMROAD_UPDATE_SUBSCRIPTION_URL = "https://app.gumroad.com/subscriptions";
 export const TIERS = {
-    "Basic Plan": 50,
-    "Standard Plan (Best Deal)": 200,
-    "Pro Plan": 500,
+    "Basic Plan": 40,
+    "Standard Plan (Best Deal)": 120,
+    "Pro Plan": 400,
 }
 export const GUMROAD_RESOURCE_TYPES = {
     SALE: "sale",
