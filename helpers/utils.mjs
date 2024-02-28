@@ -49,38 +49,29 @@ export const getBody = (event) => {
 const parseFormUrlEncoded = (bodyString) => {
   const params = {};
   const keyValuePairs = bodyString.split('&');
-  keyValuePairs.forEach(keyValuePair => {
+
+  for (const keyValuePair of keyValuePairs) {
     const [key, value] = keyValuePair.split('=');
     const decodedKey = decodeURIComponent(key);
     const decodedValue = decodeURIComponent(value);
 
-    // Split the key by '.' to handle nested objects
-    const keys = decodedKey.split('.');
+    // Split the key by square brackets to handle nested objects
+    const keyParts = decodedKey.split(/\[|\]/).filter(Boolean);
+
+    // Iterate through key parts and build the object structure
     let obj = params;
-
-    // Traverse through the keys array to handle nested objects
-    for (let i = 0; i < keys.length; i++) {
-      const currentKey = keys[i];
-      const isLastKey = i === keys.length - 1;
-
-      // If it's the last key, assign the value
-      if (isLastKey) {
-        if (currentKey.includes('[')) {
-          // Handle array notation
-          const arrayKey = currentKey.substring(0, currentKey.indexOf('['));
-          const index = currentKey.match(/\[(.*?)\]/)[1];
-          obj[arrayKey] = obj[arrayKey] || [];
-          obj[arrayKey][index] = decodedValue;
-        } else {
-          obj[currentKey] = decodedValue;
-        }
+    for (let i = 0; i < keyParts.length; i++) {
+      const currentKey = keyParts[i];
+      if (i === keyParts.length - 1) {
+        // Last key, assign the value
+        obj[currentKey] = decodedValue;
       } else {
-        // If the key does not exist, create an empty object
+        // Create nested objects if they don't exist
         obj[currentKey] = obj[currentKey] || {};
         obj = obj[currentKey];
       }
     }
-  });
+  }
   return params;
 };
 
