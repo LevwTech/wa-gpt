@@ -9,7 +9,8 @@ export const handler = async (event, context, callback) => {
     let response;
     switch (action) {
       case "phone":
-          response = getWhatsAppBotUrl();
+          const lang = event.queryStringParameters?.lang || "en";
+          response = getWhatsAppBotUrl(lang);
           break;
       case "subscription":
         await subsriptionNotificationsHandler(body);

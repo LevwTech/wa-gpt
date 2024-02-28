@@ -1,5 +1,4 @@
-import querystring from "querystring";
-import { WHATSAPP_URL } from "./constants.mjs";
+import { BOT_PHONE_NUMBER, SUPPORTED_LANGUAGES, START_MESSAGE } from "./constants.mjs";
 export const getAction = (event) => event.rawPath?.split("/")[1];
 
 export const getBody = (event) => {
@@ -83,7 +82,10 @@ export const extractMediaRequestPrompt = (text, type) => {
 //   return 'A visual sticker with white stroke of: #FFFFFF.' + text;
 // }
 
-export const getWhatsAppBotUrl = (payload) => {
+export const getWhatsAppBotUrl = (lang) => {
+  lang = lang.toLowerCase();
+  if(!SUPPORTED_LANGUAGES.includes(lang)) lang = "en";
+ const WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${BOT_PHONE_NUMBER}&text=${START_MESSAGE[lang].replace(/ /g, "%20").replace("?","%3F")}`;
   return WHATSAPP_URL
 }
 
