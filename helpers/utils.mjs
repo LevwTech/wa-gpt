@@ -50,32 +50,24 @@ import qs from 'qs';
 export const getBody = (event) => {
   let body;
   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
-    const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-    body = parseFormUrlEncoded(decodedBody);
+    body = parseFormUrlEncodedBody(event.body);
   } else {
     body = event.body ? JSON.parse(event.body) : {};
   }
   return body;
 };
 
-const parseFormUrlEncoded = (encodedBody) => {
-  const keyValuePairs = encodedBody.split('&');
-  const result = {};
-  for (const pair of keyValuePairs) {
+function parseFormUrlEncodedBody(body) {
+  const parsedBody = {};
+  const keyValuePairs = body.split('&');
+  
+  for (let pair of keyValuePairs) {
     const [key, value] = pair.split('=');
-    const decodedKey = decodeURIComponent(key);
-    const decodedValue = decodeURIComponent(value);
-    const keys = decodedKey.split('.');
-    let currentObj = result;
-    for (let i = 0; i < keys.length - 1; i++) {
-      const keyPart = keys[i];
-      currentObj[keyPart] = currentObj[keyPart] || {};
-      currentObj = currentObj[keyPart];
-    }
-    currentObj[keys[keys.length - 1]] = decodedValue;
+    parsedBody[decodeURIComponent(key)] = decodeURIComponent(value);
   }
-  return result;
-};
+  
+  return parsedBody;
+}
 
 
 export const handleBadRequest = () => ({
