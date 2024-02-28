@@ -1,5 +1,7 @@
 import { BOT_PHONE_NUMBER, SUPPORTED_LANGUAGES, START_MESSAGE } from "./constants.mjs";
 export const getAction = (event) => event.rawPath?.split("/")[1];
+import querystring from 'querystring';
+import qs from 'qs';
 
 // export const getBody = (event) => {
 //   let body;
