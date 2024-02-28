@@ -49,28 +49,28 @@ import qs from 'qs';
 
 export const getBody = (event) => {
   let body;
+
   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
       const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-      body = parseFormUrlEncoded(decodedBody);
+      body = querystring.parse(decodedBody);
   } else {
       body = event.body ? JSON.parse(event.body) : {};
   }
-  return body;
-}
-
-const parseFormUrlEncoded = (encodedBody) => {
-  const parsedBody = querystring.parse(encodedBody);
-
-  const parsedObject = {};
-  for (const key in parsedBody) {
-      if (parsedBody.hasOwnProperty(key)) {
-          if (!key.includes('[')) { 
-              parsedObject[key] = parsedBody[key];
+  const parseObject = (obj) => {
+      for (const key in obj) {
+          if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+              obj[key] = parseObject(obj[key]); // Recursively parse nested object
+          } else if (typeof obj[key] === 'string' && obj[key] === 'true') {
+              obj[key] = true; // Convert string 'true' to boolean true
+          } else if (typeof obj[key] === 'string' && obj[key] === 'false') {
+              obj[key] = false; // Convert string 'false' to boolean false
           }
       }
-  }
-  return parsedObject;
-}
+      return obj;
+  };
+  body = parseObject(body);
+  return body;
+};
 
 
 export const handleBadRequest = () => ({
