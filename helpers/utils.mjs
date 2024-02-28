@@ -48,32 +48,45 @@ export const getBody = (event) => {
 
 const parseFormUrlEncoded = (bodyString) => {
   const params = {};
-  const keyValuePairs = bodyString.split('&');
 
-  for (const keyValuePair of keyValuePairs) {
+  const decodeKeyValuePair = (keyValuePair) => {
     const [key, value] = keyValuePair.split('=');
     const decodedKey = decodeURIComponent(key);
     const decodedValue = decodeURIComponent(value);
+    return [decodedKey, decodedValue];
+  };
 
-    // Split the key by square brackets to handle nested objects
-    const keyParts = decodedKey.split(/\[|\]/).filter(Boolean);
+  const recursiveAssign = (obj, keys, value) => {
+    const key = keys[0];
 
-    // Iterate through key parts and build the object structure
-    let obj = params;
-    for (let i = 0; i < keyParts.length; i++) {
-      const currentKey = keyParts[i];
-      if (i === keyParts.length - 1) {
-        // Last key, assign the value
-        obj[currentKey] = decodedValue;
+    if (keys.length === 1) {
+      if (Array.isArray(obj[key])) {
+        obj[key].push(value);
+      } else if (obj[key]) {
+        obj[key] = [obj[key], value];
       } else {
-        // Create nested objects if they don't exist
-        obj[currentKey] = obj[currentKey] || {};
-        obj = obj[currentKey];
+        obj[key] = value;
       }
+    } else {
+      obj[key] = obj[key] || {};
+      recursiveAssign(obj[key], keys.slice(1), value);
     }
-  }
+  };
+
+  const keyValuePairs = bodyString.split('&');
+  keyValuePairs.forEach(keyValuePair => {
+    const [key, value] = decodeKeyValuePair(keyValuePair);
+    if (key.includes('[')) {
+      const keys = key.split(/[\[\]]/).filter(Boolean);
+      recursiveAssign(params, keys, value);
+    } else {
+      params[key] = value;
+    }
+  });
+
   return params;
 };
+
 
 
 
