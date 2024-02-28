@@ -46,50 +46,39 @@ import qs from 'qs';
 //   return params;
 // }
 
+
 export const getBody = (event) => {
-    let body;
+  let body;
 
-    if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
-        const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-        body = parseUrlEncodedBody(decodedBody);
-    } else {
-        body = event.body ? JSON.parse(event.body) : {};
-    }
+  if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
+      const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
+      body = parseNestedQuerystring(decodedBody);
+  } else {
+      body = event.body ? JSON.parse(event.body) : {};
+  }
 
-    return body;
+  return body;
 }
 
-const parseUrlEncodedBody = (bodyString) => {
-    const parsedBody = querystring.parse(bodyString);
-    return parseNestedFields(parsedBody);
-}
+function parseNestedQuerystring(query) {
+  const parsedQuery = querystring.parse(query);
+  const parsedBody = {};
 
-const parseNestedFields = (bodyObject) => {
-    const parsedObject = {};
+  for (const key in parsedQuery) {
+      if (Object.prototype.hasOwnProperty.call(parsedQuery, key)) {
+          const value = parsedQuery[key];
 
-    for (const key in bodyObject) {
-        if (Object.prototype.hasOwnProperty.call(bodyObject, key)) {
-            if (key.includes('.')) {
-                const keys = key.split('.');
-                let currentObject = parsedObject;
+          if (typeof value === 'object') {
+              // If the value is an object, recursively parse it
+              parsedBody[key] = parseNestedQuerystring(value);
+          } else {
+              // Otherwise, assign the value as is
+              parsedBody[key] = value;
+          }
+      }
+  }
 
-                for (let i = 0; i < keys.length; i++) {
-                    const currentKey = keys[i];
-
-                    if (i === keys.length - 1) {
-                        currentObject[currentKey] = bodyObject[key];
-                    } else {
-                        currentObject[currentKey] = currentObject[currentKey] || {};
-                        currentObject = currentObject[currentKey];
-                    }
-                }
-            } else {
-                parsedObject[key] = bodyObject[key];
-            }
-        }
-    }
-
-    return parsedObject;
+  return parsedBody;
 }
 
 
