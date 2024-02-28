@@ -49,27 +49,32 @@ import qs from 'qs';
 
 export const getBody = (event) => {
   let body;
-
   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
-      const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-      body = querystring.parse(decodedBody);
+    const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
+    body = parseFormUrlEncoded(decodedBody);
   } else {
-      body = event.body ? JSON.parse(event.body) : {};
+    body = event.body ? JSON.parse(event.body) : {};
   }
-  const parseObject = (obj) => {
-      for (const key in obj) {
-          if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-              obj[key] = parseObject(obj[key]); // Recursively parse nested object
-          } else if (typeof obj[key] === 'string' && obj[key] === 'true') {
-              obj[key] = true; // Convert string 'true' to boolean true
-          } else if (typeof obj[key] === 'string' && obj[key] === 'false') {
-              obj[key] = false; // Convert string 'false' to boolean false
-          }
-      }
-      return obj;
-  };
-  body = parseObject(body);
   return body;
+};
+
+const parseFormUrlEncoded = (encodedBody) => {
+  const keyValuePairs = encodedBody.split('&');
+  const result = {};
+  for (const pair of keyValuePairs) {
+    const [key, value] = pair.split('=');
+    const decodedKey = decodeURIComponent(key);
+    const decodedValue = decodeURIComponent(value);
+    const keys = decodedKey.split('.');
+    let currentObj = result;
+    for (let i = 0; i < keys.length - 1; i++) {
+      const keyPart = keys[i];
+      currentObj[keyPart] = currentObj[keyPart] || {};
+      currentObj = currentObj[keyPart];
+    }
+    currentObj[keys[keys.length - 1]] = decodedValue;
+  }
+  return result;
 };
 
 
