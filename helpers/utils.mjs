@@ -3,69 +3,54 @@ import querystring from 'querystring';
 import { BOT_PHONE_NUMBER, SUPPORTED_LANGUAGES, START_MESSAGE } from "./constants.mjs";
 export const getAction = (event) => event.rawPath?.split("/")[1];
 
-// export const getBody = (event) => {
-//   let body;
-//   if (event.headers?.['content-type'] === 'application/x-www-form-urlencoded') {
-//     const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-//     body = parseFormUrlEncoded(decodedBody);
-//   } else {
-//     body = event.body ? JSON.parse(event.body) : {};
-//   } 
-//   return body;
-// }
-
-// export const getBody = (event) => {
-//   let body;
-//   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
-//     const decodedBody = qs.parse(event.body);
-//     body = decodedBody;
-//   } else {
-//     body = event.body ? JSON.parse(event.body) : {};
-//   }
-//   return body;
-// };
-
 export const getBody = (event) => {
   let body;
+
   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
       const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-      body = querystring.parse(decodedBody, null, null, { decodeURIComponent: querystring.unescape });
+      body = parseFormUrlEncoded(decodedBody);
   } else {
       body = event.body ? JSON.parse(event.body) : {};
   }
-  return body;
-};
 
-const parseFormUrlEncoded = (bodyString) => {
-  const params = {};
-  const keyValuePairs = bodyString.split('&');
-  keyValuePairs.forEach(keyValuePair => {
-    const [key, value] = keyValuePair.split('=');
-    const decodedKey = decodeURIComponent(key);
-    const decodedValue = decodeURIComponent(value);
-    if (decodedKey.includes('[')) {
-      const keys = decodedKey.split(/\[|\]/).filter(Boolean);
-      let obj = params;
-      for (let i = 0; i < keys.length; i++) {
-        const currentKey = keys[i];
-        if (i === keys.length - 1) {
-          if (Array.isArray(obj[currentKey])) {
-            obj[currentKey].push(decodedValue);
-          } else if (obj[currentKey]) {
-            obj[currentKey] = [obj[currentKey], decodedValue];
-          } else {
-            obj[currentKey] = decodedValue;
-          }
-        } else {
-          obj[currentKey] = obj[currentKey] || {};
-          obj = obj[currentKey];
-        }
+  return body;
+}
+
+const parseFormUrlEncoded = (encodedString) => {
+  const parsedObject = {};
+  const pairs = encodedString.split('&');
+
+  pairs.forEach(pair => {
+      const [key, value] = pair.split('=');
+      const decodedKey = decodeURIComponent(key);
+      const decodedValue = decodeURIComponent(value);
+
+      // Check if the key has square brackets indicating an array or nested object
+      if (decodedKey.includes('[')) {
+          addToParsedObject(parsedObject, decodedKey, decodedValue);
+      } else {
+          parsedObject[decodedKey] = decodedValue;
       }
-    } else {
-      params[decodedKey] = decodedValue;
-    }
   });
-  return params;
+
+  return parsedObject;
+}
+
+const addToParsedObject = (parsedObject, key, value) => {
+  const keys = key.split(/[\[\]]/).filter(Boolean); // Remove empty strings
+  let currentObj = parsedObject;
+
+  for (let i = 0; i < keys.length; i++) {
+      const currentKey = keys[i];
+      if (i === keys.length - 1) {
+          currentObj[currentKey] = value;
+      } else {
+          if (!currentObj[currentKey]) {
+              currentObj[currentKey] = isNaN(keys[i + 1]) ? {} : [];
+          }
+          currentObj = currentObj[currentKey];
+      }
+  }
 }
 
 export const handleBadRequest = () => ({
