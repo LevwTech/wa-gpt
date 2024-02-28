@@ -3,55 +3,40 @@ import querystring from 'querystring';
 import { BOT_PHONE_NUMBER, SUPPORTED_LANGUAGES, START_MESSAGE } from "./constants.mjs";
 export const getAction = (event) => event.rawPath?.split("/")[1];
 
+import querystring from 'querystring';
+
+export const parseFormUrlEncoded = (encodedBody) => {
+    const decodedBody = Buffer.from(encodedBody, 'base64').toString('utf-8');
+    const parsedBody = querystring.parse(decodedBody);
+    
+    // Recursively parse nested fields
+    const parseNestedFields = (obj) => {
+        const parsedObj = {};
+        for (const key in obj) {
+            if (typeof obj[key] === 'object') {
+                parsedObj[key] = parseNestedFields(obj[key]);
+            } else {
+                parsedObj[key] = obj[key];
+            }
+        }
+        return parsedObj;
+    };
+    
+    return parseNestedFields(parsedBody);
+};
+
 export const getBody = (event) => {
-  let body;
+    let body;
 
-  if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
-      const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-      body = parseFormUrlEncoded(decodedBody);
-  } else {
-      body = event.body ? JSON.parse(event.body) : {};
-  }
+    if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
+        body = parseFormUrlEncoded(event.body);
+    } else {
+        body = event.body ? JSON.parse(event.body) : {};
+    }
 
-  return body;
-}
+    return body;
+};
 
-const parseFormUrlEncoded = (encodedString) => {
-  const parsedObject = {};
-  const pairs = encodedString.split('&');
-
-  pairs.forEach(pair => {
-      const [key, value] = pair.split('=');
-      const decodedKey = decodeURIComponent(key);
-      const decodedValue = decodeURIComponent(value);
-
-      // Check if the key has square brackets indicating an array or nested object
-      if (decodedKey.includes('[')) {
-          addToParsedObject(parsedObject, decodedKey, decodedValue);
-      } else {
-          parsedObject[decodedKey] = decodedValue;
-      }
-  });
-
-  return parsedObject;
-}
-
-const addToParsedObject = (parsedObject, key, value) => {
-  const keys = key.split(/[\[\]]/).filter(Boolean); // Remove empty strings
-  let currentObj = parsedObject;
-
-  for (let i = 0; i < keys.length; i++) {
-      const currentKey = keys[i];
-      if (i === keys.length - 1) {
-          currentObj[currentKey] = value;
-      } else {
-          if (!currentObj[currentKey]) {
-              currentObj[currentKey] = isNaN(keys[i + 1]) ? {} : [];
-          }
-          currentObj = currentObj[currentKey];
-      }
-  }
-}
 
 export const handleBadRequest = () => ({
   statusCode: 400,
