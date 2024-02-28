@@ -47,45 +47,8 @@ export const getBody = (event) => {
 // }
 
 const parseFormUrlEncoded = (bodyString) => {
-  const params = {};
-
-  const decodeKeyValuePair = (keyValuePair) => {
-    const [key, value] = keyValuePair.split('=');
-    const decodedKey = decodeURIComponent(key);
-    const decodedValue = decodeURIComponent(value);
-    return [decodedKey, decodedValue];
-  };
-
-  const recursiveAssign = (obj, keys, value) => {
-    const key = keys[0];
-
-    if (keys.length === 1) {
-      if (Array.isArray(obj[key])) {
-        obj[key].push(value);
-      } else if (obj[key]) {
-        obj[key] = [obj[key], value];
-      } else {
-        obj[key] = value;
-      }
-    } else {
-      obj[key] = obj[key] || {};
-      recursiveAssign(obj[key], keys.slice(1), value);
-    }
-  };
-
-  const keyValuePairs = bodyString.split('&');
-  keyValuePairs.forEach(keyValuePair => {
-    const [key, value] = decodeKeyValuePair(keyValuePair);
-    if (key.includes('[')) {
-      const keys = key.split(/[\[\]]/).filter(Boolean);
-      recursiveAssign(params, keys, value);
-    } else {
-      params[key] = value;
-    }
-  });
-
-  return params;
-};
+  return qs.parse(bodyString);
+}
 
 
 
