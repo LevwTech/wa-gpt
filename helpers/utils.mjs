@@ -44,8 +44,6 @@ export const getAction = (event) => event.rawPath?.split("/")[1];
 //   return params;
 // }
 
-import querystring from 'querystring';
-
 export const getBody = (event) => {
     let body;
 
