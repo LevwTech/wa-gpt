@@ -47,7 +47,35 @@ export const getBody = (event) => {
 // }
 
 const parseFormUrlEncoded = (bodyString) => {
-  return qs.parse(bodyString);
+  const params = {};
+  const keyValuePairs = bodyString.split('&');
+  keyValuePairs.forEach(keyValuePair => {
+    const parts = keyValuePair.split('=');
+    const decodedKey = decodeURIComponent(parts[0]);
+    const decodedValue = decodeURIComponent(parts[1]);
+
+    // Handle nested objects using an accumulator approach
+    let currentObject = params;
+    const keys = decodedKey.split(/\[|\]/).filter(Boolean);
+    for (let i = 0; i < keys.length; i++) {
+      const currentKey = keys[i];
+      if (i === keys.length - 1) {
+        // Last key, assign value or add to array if necessary
+        if (Array.isArray(currentObject[currentKey])) {
+          currentObject[currentKey].push(decodedValue);
+        } else if (currentObject[currentKey]) {
+          currentObject[currentKey] = [currentObject[currentKey], decodedValue];
+        } else {
+          currentObject[currentKey] = decodedValue;
+        }
+      } else {
+        // Create nested object if it doesn't exist
+        currentObject[currentKey] = currentObject[currentKey] || {};
+        currentObject = currentObject[currentKey];
+      }
+    }
+  });
+  return params;
 }
 
 
