@@ -85,7 +85,7 @@ export const handleMessage = async (body) => {
 
   await sendMessage(userNumber, type, messageBody);
 
-  if(!isUserAllowed) return;
+  if(!isUserAllowed && !isSubscribedToProPlan) return;
   switch (type) {
     case 'text':
       const textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
