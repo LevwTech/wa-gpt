@@ -49,36 +49,27 @@ import qs from 'qs';
 
 export const getBody = (event) => {
   let body;
-
   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
       const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-      body = parseNestedQuerystring(decodedBody);
+      body = parseFormUrlEncoded(decodedBody);
   } else {
       body = event.body ? JSON.parse(event.body) : {};
   }
-
   return body;
 }
 
-function parseNestedQuerystring(query) {
-  const parsedQuery = querystring.parse(query);
-  const parsedBody = {};
+const parseFormUrlEncoded = (encodedBody) => {
+  const parsedBody = querystring.parse(encodedBody);
 
-  for (const key in parsedQuery) {
-      if (Object.prototype.hasOwnProperty.call(parsedQuery, key)) {
-          const value = parsedQuery[key];
-
-          if (typeof value === 'object') {
-              // If the value is an object, recursively parse it
-              parsedBody[key] = parseNestedQuerystring(value);
-          } else {
-              // Otherwise, assign the value as is
-              parsedBody[key] = value;
+  const parsedObject = {};
+  for (const key in parsedBody) {
+      if (parsedBody.hasOwnProperty(key)) {
+          if (!key.includes('[')) { 
+              parsedObject[key] = parsedBody[key];
           }
       }
   }
-
-  return parsedBody;
+  return parsedObject;
 }
 
 
