@@ -3,16 +3,16 @@ export const getAction = (event) => event.rawPath?.split("/")[1];
 import querystring from 'querystring';
 import qs from 'qs';
 
-// export const getBody = (event) => {
-//   let body;
-//   if (event.headers?.['content-type'] === 'application/x-www-form-urlencoded') {
-//     const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
-//     body = parseFormUrlEncoded(decodedBody);
-//   } else {
-//     body = event.body ? JSON.parse(event.body) : {};
-//   } 
-//   return body;
-// }
+export const getBody = (event) => {
+  let body;
+  if (event.headers?.['content-type'] === 'application/x-www-form-urlencoded') {
+    const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
+    body = parseFormUrlEncoded(decodedBody);
+  } else {
+    body = event.body ? JSON.parse(event.body) : {};
+  } 
+  return body;
+}
 
 // const parseFormUrlEncoded = (bodyString) => {
 //   const params = {};
@@ -46,38 +46,44 @@ import qs from 'qs';
 //   return params;
 // }
 
-export const getBody = (event) => {
-  let body;
-  if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
-    body = parseFormUrlEncodedBody(event.body);
-  } else {
-    body = event.body ? JSON.parse(event.body) : {};
-  }
-  return body;
-};
+const parseFormUrlEncoded = (bodyString) => {
+  const params = {};
+  const keyValuePairs = bodyString.split('&');
+  keyValuePairs.forEach(keyValuePair => {
+    const [key, value] = keyValuePair.split('=');
+    const decodedKey = decodeURIComponent(key);
+    const decodedValue = decodeURIComponent(value);
 
-const parseFormUrlEncodedBody = (body) => {
-  if (!body) return {};
-  const parsedBody = querystring.parse(body);
-  const parsedNestedBody = {};
-  for (const key in parsedBody) {
-    if (parsedBody.hasOwnProperty(key)) {
-      const value = parsedBody[key];
-      if (value.includes('=')) {
-        const nestedObject = {};
-        const nestedPairs = value.split('&');
-        nestedPairs.forEach(pair => {
-          const [nestedKey, nestedValue] = pair.split('=');
-          nestedObject[nestedKey] = nestedValue;
-        });
-        parsedNestedBody[key] = nestedObject;
+    // Split the key by '.' to handle nested objects
+    const keys = decodedKey.split('.');
+    let obj = params;
+
+    // Traverse through the keys array to handle nested objects
+    for (let i = 0; i < keys.length; i++) {
+      const currentKey = keys[i];
+      const isLastKey = i === keys.length - 1;
+
+      // If it's the last key, assign the value
+      if (isLastKey) {
+        if (currentKey.includes('[')) {
+          // Handle array notation
+          const arrayKey = currentKey.substring(0, currentKey.indexOf('['));
+          const index = currentKey.match(/\[(.*?)\]/)[1];
+          obj[arrayKey] = obj[arrayKey] || [];
+          obj[arrayKey][index] = decodedValue;
+        } else {
+          obj[currentKey] = decodedValue;
+        }
       } else {
-        parsedNestedBody[key] = value;
+        // If the key does not exist, create an empty object
+        obj[currentKey] = obj[currentKey] || {};
+        obj = obj[currentKey];
       }
     }
-  }
-  return parsedNestedBody;
+  });
+  return params;
 };
+
 
 
 export const handleBadRequest = () => ({
