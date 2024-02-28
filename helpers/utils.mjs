@@ -1,4 +1,5 @@
 import qs from 'qs';
+import querystring from 'querystring';
 import { BOT_PHONE_NUMBER, SUPPORTED_LANGUAGES, START_MESSAGE } from "./constants.mjs";
 export const getAction = (event) => event.rawPath?.split("/")[1];
 
@@ -12,13 +13,25 @@ export const getAction = (event) => event.rawPath?.split("/")[1];
 //   } 
 //   return body;
 // }
+
+// export const getBody = (event) => {
+//   let body;
+//   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
+//     const decodedBody = qs.parse(event.body);
+//     body = decodedBody;
+//   } else {
+//     body = event.body ? JSON.parse(event.body) : {};
+//   }
+//   return body;
+// };
+
 export const getBody = (event) => {
   let body;
   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
-    const decodedBody = qs.parse(event.body);
-    body = decodedBody;
+      const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
+      body = querystring.parse(decodedBody, null, null, { decodeURIComponent: querystring.unescape });
   } else {
-    body = event.body ? JSON.parse(event.body) : {};
+      body = event.body ? JSON.parse(event.body) : {};
   }
   return body;
 };
