@@ -49,32 +49,34 @@ import qs from 'qs';
 export const getBody = (event) => {
   let body;
   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
-    body = parseBody(event.body);
+    body = parseFormUrlEncodedBody(event.body);
   } else {
     body = event.body ? JSON.parse(event.body) : {};
   }
   return body;
 };
 
-const parseBody = (bodyString) => {
-  const parsedBody = querystring.parse(bodyString);
-  const result = {};
+const parseFormUrlEncodedBody = (body) => {
+  if (!body) return {};
+  const parsedBody = querystring.parse(body);
+  const parsedNestedBody = {};
   for (const key in parsedBody) {
     if (parsedBody.hasOwnProperty(key)) {
-      if (parsedBody[key] !== '[object Object]') {
-        result[key] = parsedBody[key];
+      const value = parsedBody[key];
+      if (value.includes('=')) {
+        const nestedObject = {};
+        const nestedPairs = value.split('&');
+        nestedPairs.forEach(pair => {
+          const [nestedKey, nestedValue] = pair.split('=');
+          nestedObject[nestedKey] = nestedValue;
+        });
+        parsedNestedBody[key] = nestedObject;
       } else {
-        result[key] = {};
-        const innerObject = parsedBody[key];
-        for (const innerKey in innerObject) {
-          if (innerObject.hasOwnProperty(innerKey) && typeof innerObject[innerKey] === 'string') {
-            result[key][innerKey] = innerObject[innerKey];
-          }
-        }
+        parsedNestedBody[key] = value;
       }
     }
   }
-  return result;
+  return parsedNestedBody;
 };
 
 
