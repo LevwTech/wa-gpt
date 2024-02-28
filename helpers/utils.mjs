@@ -46,28 +46,36 @@ import qs from 'qs';
 //   return params;
 // }
 
-
 export const getBody = (event) => {
   let body;
   if (event.headers['content-type'] === 'application/x-www-form-urlencoded') {
-    body = parseFormUrlEncodedBody(event.body);
+    body = parseBody(event.body);
   } else {
     body = event.body ? JSON.parse(event.body) : {};
   }
   return body;
 };
 
-function parseFormUrlEncodedBody(body) {
-  const parsedBody = {};
-  const keyValuePairs = body.split('&');
-  
-  for (let pair of keyValuePairs) {
-    const [key, value] = pair.split('=');
-    parsedBody[decodeURIComponent(key)] = decodeURIComponent(value);
+const parseBody = (bodyString) => {
+  const parsedBody = querystring.parse(bodyString);
+  const result = {};
+  for (const key in parsedBody) {
+    if (parsedBody.hasOwnProperty(key)) {
+      if (parsedBody[key] !== '[object Object]') {
+        result[key] = parsedBody[key];
+      } else {
+        result[key] = {};
+        const innerObject = parsedBody[key];
+        for (const innerKey in innerObject) {
+          if (innerObject.hasOwnProperty(innerKey) && typeof innerObject[innerKey] === 'string') {
+            result[key][innerKey] = innerObject[innerKey];
+          }
+        }
+      }
+    }
   }
-  
-  return parsedBody;
-}
+  return result;
+};
 
 
 export const handleBadRequest = () => ({
