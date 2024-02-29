@@ -7,6 +7,7 @@
 ## Features
 
 - Generate your own unique stickers and images 🎨 start chatting now for free! 💬✨
+- Users can easily communicate with friends and family using visuals, sending stickers or images instantly to convey ideas, emotions, and more, enhancing the conversation with creativity and expression. 🌟💬🎨
 - The product leverages the most advanced AI models' capabilities to answer questions, tell stories, and perform diverse tasks seamlessly, offering a blend of knowledge and creativity. 🤖
 - Built-in feature to generate images using the /image command, allowing users to visualize their ideas instantly. 🖼️✨
 - Users can create custom stickers effortlessly with the /sticker command, adding a fun and personalized touch to their conversations. 🎉📌
