@@ -104,6 +104,10 @@ export const subsriptionNotificationsHandler = async (body) => {
 }
 export const checkRenewal = async (user) => {
     if (user.isSubscribed && user.nextRenewalUnixTime != 0 && getCurrentUnixTime() > user.nextRenewalUnixTime) {
-        await saveUser(user.userNumber, 0, user.quota, user.isSubscribed, user.hasSubscribed, getNextRenewalUnixTime(user.nextRenewalUnixTime), user.subscriptionId, user.lastMediaGenerationTime);
+        let nextRenewalUnixTime = getNextRenewalUnixTime(user.nextRenewalUnixTime);
+        while (getCurrentUnixTime() > nextRenewalUnixTime) {
+            nextRenewalUnixTime = getNextRenewalUnixTime(nextRenewalUnixTime);
+        }
+        await saveUser(user.userNumber, 0, user.quota, user.isSubscribed, user.hasSubscribed, nextRenewalUnixTime, user.subscriptionId, user.lastMediaGenerationTime);
     }
 }
