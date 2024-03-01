@@ -101,10 +101,6 @@ export const getAudioTranscription = async (data, extension) => {
       ...headers,
       "Content-Type": "multipart/form-data",
     }
-    const form = new FormData();
-    form.append('file', fs.createReadStream(tempFilePath));
-    form.append("model", "whisper-1");
-    form.append("response_format", "verbose_json");
     const response = await axios.post(`${openAIURL}/audio/transcriptions`, 
     {
       file: fs.createReadStream(tempFilePath),
