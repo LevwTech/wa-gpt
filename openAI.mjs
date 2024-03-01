@@ -93,7 +93,10 @@ const getGPTImagePrompt = async (prompt, isSticker) => {
 
 export const getAudioTranscription = async (file) => {
   try {
-    headers["Content-Type"] = "multipart/form-data";
+    const audioHeaders = {
+      ...headers,
+      "Content-Type": "multipart/form-data",
+    }
     const response = await axios.post(
       `${openAIURL}/audio/transcriptions`,
       {
@@ -101,7 +104,7 @@ export const getAudioTranscription = async (file) => {
         model: "whisper-1",
         response_format: "verbose_json"
       },
-      { headers },
+      { headers: audioHeaders },
     );
     const text = limitTextLength(response.data.text, WHATSAPP_MAX_TEXT_LENGTH);
     const duration = response.data.duration;

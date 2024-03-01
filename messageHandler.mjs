@@ -16,7 +16,7 @@ export const handleMessage = async (body) => {
   let { userName, userNumber, messageType, text } = extractMessageInfo(body);
 
   // If user sends a message that is not text or audio, we don't want to process it
-  if (!['text', 'audio'].includes(messageType)|| !userNumber) return;
+  if (!['text', 'audio'].includes(messageType) || !userNumber) return;
 
   const user = await getUser(userNumber);
   if (!user) await addNewUser(userNumber);
