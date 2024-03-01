@@ -1,5 +1,7 @@
 import axios from "axios";
 import _ from "lodash";
+import { Readable } from "stream";
+import { toFile } from "openai/uploads";
 import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH, RATE_LIMIT_ERROR_MESSAGE, AUDIO_TOKEN_COST_PER_MINUTE } from "./helpers/constants.mjs";
 import { limitTextLength } from "./helpers/utils.mjs";
 // import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
@@ -98,7 +100,8 @@ export const getAudioTranscription = async (file) => {
       "Content-Type": "multipart/form-data",
     }
     const form = new FormData();
-    form.append('file', file);
+    const convertedFile = await toFile(Readable.from(data), "audio");
+    form.append('file', convertedFile);
     form.append("model", "whisper-1");
     form.append("response_format", "verbose_json");
     const response = await axios.post(`${openAIURL}/audio/transcriptions`, form, { headers: audioHeaders });
