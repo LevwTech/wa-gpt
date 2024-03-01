@@ -144,11 +144,11 @@ const getAudioFile = async (audioId) => {
     { headers },
   );
   const mediaMetaDataUrl = mediaResponse.data.url
+  const audioExtension = mediaResponse.data.mime_type.split('/')[1];
   const mediaDataResponse = await axios.get(
     mediaMetaDataUrl,
     { headers, responseType: 'arraybuffer' },
   );
   const audioData = mediaDataResponse.data;
-  const audioExtension = mediaDataResponse.mime_type.split('/')[1];
   return { audioData, audioExtension }
 }
