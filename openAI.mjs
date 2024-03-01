@@ -105,7 +105,13 @@ export const getAudioTranscription = async (data, extension) => {
     form.append('file', fs.createReadStream(tempFilePath));
     form.append("model", "whisper-1");
     form.append("response_format", "verbose_json");
-    const response = await axios.post(`${openAIURL}/audio/transcriptions`, form, { headers: audioHeaders });
+    const response = await axios.post(`${openAIURL}/audio/transcriptions`, 
+    {
+      file: fs.createReadStream(tempFilePath),
+      model: "whisper-1",
+      response_format: "verbose_json"
+    }, 
+    { headers: audioHeaders });
     fs.unlinkSync(tempFilePath);  
     const text = limitTextLength(response.data.text, WHATSAPP_MAX_TEXT_LENGTH);
     const duration = response.data.duration;
