@@ -100,7 +100,7 @@ export const getAudioTranscription = async (file) => {
       "Content-Type": "multipart/form-data",
     }
     const form = new FormData();
-    const convertedFile = await toFile(Readable.from(data), "audio");
+    const convertedFile = await toFile(Readable.from(file), "audio");
     form.append('file', convertedFile);
     form.append("model", "whisper-1");
     form.append("response_format", "verbose_json");
