@@ -28,8 +28,8 @@ export const handleMessage = async (body) => {
 
   if (isAudio) {
     const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
-    const audioFile = await getAudioFile(audioId);
-    const audioResponseObj = await getAudioTranscription(audioFile);
+    const { audioData, audioExtension } = await getAudioFile(audioId);
+    const audioResponseObj = await getAudioTranscription(audioData, audioExtension);
     if (audioResponseObj === RATE_LIMIT_ERROR_MESSAGE) {
       await sendMessage(userNumber, 'text', { body: RATE_LIMIT_MESSAGE });
       return;
@@ -148,5 +148,7 @@ const getAudioFile = async (audioId) => {
     mediaMetaDataUrl,
     { headers, responseType: 'arraybuffer' },
   );
-  return mediaDataResponse.data
+  const audioData = mediaDataResponse.data;
+  const audioExtension = mediaDataResponse.mime_type.split('/')[1];
+  return { audioData, audioExtension }
 }
