@@ -1,8 +1,9 @@
 import _ from "lodash";
 import uuid4 from "uuid4";
+import axios from "axios";
 import { START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE, PRO_PLAN_QUOTA, UNLIMITED_PLAN_RATE_LIMIT } from "./helpers/constants.mjs";
 import { checkIfMediaRequest, extractMediaRequestPrompt, getCurrentUnixTime, hasBeen4Hours } from "./helpers/utils.mjs";
-import { promptGPT, createImage } from "./openAI.mjs";
+import { promptGPT, createImage, getAudioTranscription } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
 import { getNotAllowedMessageBody, checkRenewal } from "./payment.mjs";
@@ -12,15 +13,30 @@ export const handleMessage = async (body) => {
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
 
-  const { userName, userNumber, messageType, text } = extractMessageInfo(body);
+  let { userName, userNumber, messageType, text } = extractMessageInfo(body);
 
-  // If user sends a message that is not text, we don't want to process it
-  if (messageType !== 'text' || !text || !userNumber) return;
+  // If user sends a message that is not text or audio, we don't want to process it
+  if (!['text', 'audio'].includes(messageType)|| !userNumber) return;
 
   const user = await getUser(userNumber);
   if (!user) await addNewUser(userNumber);
 
+  const isAudio = messageType == 'audio';
+  let audioCost = 0;
+
   await checkRenewal(user);
+
+  if (isAudio) {
+    const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
+    const audioFile = await getAudioFile(audioId);
+    const audioResponseObj = await getAudioTranscription(audioFile);
+    if (audioResponseObj === RATE_LIMIT_ERROR_MESSAGE) {
+      await sendMessage(userNumber, 'text', { body: RATE_LIMIT_MESSAGE });
+      return;
+    }
+    text = audioResponseObj.text;
+    audioCost = audioResponseObj.cost;
+  }
   await saveMessage(userNumber, 'user', text);
 
   let type;
@@ -87,10 +103,6 @@ export const handleMessage = async (body) => {
 
   if(!isUserAllowed && !isSubscribedToProPlan) return;
   switch (type) {
-    case 'text':
-      const textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
-      await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, user.lastMediaGenerationTime);
-      break;
     case 'image':
       await saveUser(userNumber, user.usedTokens + IMAGE_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, getCurrentUnixTime());
       break;
@@ -98,6 +110,9 @@ export const handleMessage = async (body) => {
       await saveUser(userNumber, user.usedTokens + STICKER_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, getCurrentUnixTime());
       break;
     default:
+      let textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
+      if (isAudio) textCost += audioCost;
+      await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, user.lastMediaGenerationTime);
       break;
   }
 }
@@ -118,4 +133,20 @@ const extractMessageInfo = (body) => {
 const addNewUser = async (userNumber) => {
   await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false, 0, uuid4(), 0);
   await sendMessage(userNumber, 'text', { body: START_MESSAGE_REPLY });
+}
+
+const getAudioFile = async (audioId) => {
+  const headers = {
+    Authorization: `Bearer ${process.env.WHATSAPP_SYSTEM_ACCESS_TOKEN}`,
+  };
+  const mediaResponse = await axios.get(
+    `https://graph.facebook.com/v17.0/${audioId}`,
+    { headers },
+  );
+  const mediaMetaDataUrl = mediaResponse.data.url
+  const mediaDataResponse = await axios.get(
+    mediaMetaDataUrl,
+    { headers, responseType: 'arraybuffer' },
+  );
+  return mediaDataResponse.data
 }

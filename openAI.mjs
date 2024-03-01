@@ -1,6 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH, RATE_LIMIT_ERROR_MESSAGE } from "./helpers/constants.mjs";
+import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH, RATE_LIMIT_ERROR_MESSAGE, AUDIO_TOKEN_COST_PER_MINUTE } from "./helpers/constants.mjs";
 import { limitTextLength } from "./helpers/utils.mjs";
 // import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
 import { getProcessedSticker } from "./imageService.mjs";
@@ -88,5 +88,28 @@ const getGPTImagePrompt = async (prompt, isSticker) => {
   } catch (error) {
     // If something was wrong with the request, we return the original prompt
     return prompt;
+  }
+}
+
+export const getAudioTranscription = async (file) => {
+  try {
+    headers["Content-Type"] = "multipart/form-data";
+    const response = await axios.post(
+      `${openAIURL}/audio/transcriptions`,
+      {
+        file,
+        model: "whisper-1",
+        response_format: "verbose_json"
+      },
+      { headers },
+    );
+    const text = limitTextLength(response.data.text, WHATSAPP_MAX_TEXT_LENGTH);
+    const duration = response.data.duration;
+    const cost = duration * AUDIO_TOKEN_COST_PER_MINUTE;
+    return { text, cost };
+  } catch (error) {
+    const errorMessage = _.get(error, "response.data.error.code", null);
+    if (errorMessage === RATE_LIMIT_ERROR_MESSAGE) return errorMessage;
+    else throw new Error(error)
   }
 }

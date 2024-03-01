@@ -17,6 +17,7 @@ export const IMAGE_WAIT_MESSAGE = "Hold tight! I'm generating your image ⏳🖼
 export const FREE_STARTER_QUOTA = 5;
 export const TEXT_TOKEN_COST = 1/150;
 export const TEXT_TOKEN_COST_FREE = 1/50;
+export const AUDIO_TOKEN_COST_PER_MINUTE = 0.15;
 export const IMAGE_TOKEN_COST = 1;
 export const STICKER_TOKEN_COST = 1;
 export const RATE_LIMIT_ERROR_MESSAGE = "rate_limit_exceeded";
