@@ -95,8 +95,8 @@ const getGPTImagePrompt = async (prompt, isSticker) => {
 
 export const getAudioTranscription = async (data, extension) => {
   try {
-    const tempFilePath = path.join('/tmp', `audio.${extension}`);
-    fs.writeFileSync(tempFilePath, data);
+    const tempFilePath = `/tmp/audio.${extension}`;
+    fs.writeFileSync(filePath, data);
     const audioHeaders = {
       ...headers,
       "Content-Type": "multipart/form-data",
