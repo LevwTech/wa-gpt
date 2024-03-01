@@ -100,4 +100,16 @@ export const hasBeen4Hours = (unixTimestamp) => {
   return (currentUnixTime - unixTimestamp) >= fourHoursInSeconds;
 };
 
-export const getNextRenewalUnixTime = (prevRenewalUnixTime) => prevRenewalUnixTime + 30 * 24 * 60 * 60;
+// This function is used to calculate the next renewal date which is after 1 month
+export const getNextRenewalUnixTime = (prevRenewalUnixTime) => {
+  const timestampInMilliseconds = prevRenewalUnixTime * 1000;
+  const currentDate = new Date(timestampInMilliseconds);
+  if (currentDate.getUTCMonth() === 11) {
+    currentDate.setUTCFullYear(currentDate.getUTCFullYear() + 1);
+    currentDate.setUTCMonth(0);
+    return Math.floor(currentDate.getTime() / 1000);
+  }
+  currentDate.setUTCMonth(currentDate.getUTCMonth() + 1);
+  const newUnixTimestamp = Math.floor(currentDate.getTime() / 1000);
+  return newUnixTimestamp;
+};
