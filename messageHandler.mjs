@@ -29,8 +29,9 @@ export const handleMessage = async (body) => {
   const isInUnlimitedPlan = !isUserAllowed && isSubscribedToProPlan;
   const isAudio = messageType == 'audio';
   let audioCost = 0;
-
+  await sendMessage(userNumber, 'text', {body: `before audio message`});
   if (isAudio) {
+    await sendMessage(userNumber, 'text', {body: `isaudio ${isAudio}`});
     if (!isUserAllowed && !isSubscribedToProPlan) {
       await sendMessage(userNumber, 'interactive', getNotAllowedMessageBody(user));
       return;
