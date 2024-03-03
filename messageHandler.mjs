@@ -36,10 +36,10 @@ export const handleMessage = async (body) => {
       return;
     }
     const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
-    sendMessage(userNumber, 'text', {body: `id ${audioId}`});
+    await sendMessage(userNumber, 'text', {body: `id ${audioId}`});
     const { audioData, audioExtension } = await getAudioFile(audioId);
     const audioResponseObj = await getAudioTranscription(audioData, audioExtension);
-    sendMessage(userNumber, 'text', {body: `extension ${audioExtension}`});
+    await sendMessage(userNumber, 'text', {body: `extension ${audioExtension}`});
     if (audioResponseObj === RATE_LIMIT_ERROR_MESSAGE) {
       await sendMessage(userNumber, 'text', { body: RATE_LIMIT_MESSAGE });
       return;
