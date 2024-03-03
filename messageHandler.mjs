@@ -2,7 +2,7 @@ import _ from "lodash";
 import uuid4 from "uuid4";
 import axios from "axios";
 import { START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE, PRO_PLAN_QUOTA, UNLIMITED_PLAN_RATE_LIMIT } from "./helpers/constants.mjs";
-import { checkCommandType, extractCommandPrompt, getCurrentUnixTime, hasBeen4Hours, getLanguage } from "./helpers/utils.mjs";
+import { checkIfMediaRequest, extractMediaRequestPrompt, getCurrentUnixTime, hasBeen4Hours } from "./helpers/utils.mjs";
 import { promptGPT, createImage, getAudioTranscription } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
@@ -15,26 +15,18 @@ export const handleMessage = async (body) => {
 
   let { userName, userNumber, messageType, text } = extractMessageInfo(body);
 
+  // If user sends a message that is not text or audio, we don't want to process it
   if (!['text', 'audio'].includes(messageType) || !userNumber) return;
 
-  let lang = getLanguage(text);
   const user = await getUser(userNumber);
-  if (!user) await addNewUser(userNumber, lang);
-  await checkRenewal(user);
+  if (!user) await addNewUser(userNumber);
 
-  let type;
-  let messageBody;
-  const isSubscribedToProPlan = user.isSubscribed && user.quota == PRO_PLAN_QUOTA;
-  const isUserAllowed = user.usedTokens < user.quota;
-  const isInUnlimitedPlan = !isUserAllowed && isSubscribedToProPlan;
   const isAudio = messageType == 'audio';
   let audioCost = 0;
 
+  await checkRenewal(user);
+
   if (isAudio) {
-    if (!isUserAllowed && !isSubscribedToProPlan) {
-      await sendMessage(userNumber, 'interactive', getNotAllowedMessageBody(user));
-      return;
-    }
     const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
     const { audioData, audioExtension } = await getAudioFile(audioId);
     const audioResponseObj = await getAudioTranscription(audioData, audioExtension);
@@ -44,22 +36,26 @@ export const handleMessage = async (body) => {
     }
     text = audioResponseObj.text;
     audioCost = audioResponseObj.cost;
-    lang = getLanguage(text);
   }
-
   await saveMessage(userNumber, 'user', text);
+
+  let type;
+  let messageBody;
+  const isSubscribedToProPlan = user.isSubscribed && user.quota == PRO_PLAN_QUOTA;
+  const isUserAllowed = user.usedTokens < user.quota
+  const isInUnlimitedPlan = !isUserAllowed && isSubscribedToProPlan
 
   if (!isUserAllowed && !isSubscribedToProPlan) {
     type = 'interactive';
     messageBody = getNotAllowedMessageBody(user);
   }
-  else if (checkCommandType(text, 'image')) {
+  else if (checkIfMediaRequest(text, 'image')) {
     if (isInUnlimitedPlan && !hasBeen4Hours(user.lastMediaGenerationTime)) {
       await sendMessage(userNumber, 'text', { body: UNLIMITED_PLAN_RATE_LIMIT});
       return;
     }
     type = 'image';
-    const imagePrompt = extractCommandPrompt(text, type);
+    const imagePrompt = extractMediaRequestPrompt(text, type);
     const waitTextMessageBody = { body: IMAGE_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const imageUrl = await createImage(imagePrompt);
@@ -72,13 +68,13 @@ export const handleMessage = async (body) => {
       link: imageUrl,
     };
   }
-  else if (checkCommandType(text, 'sticker')) {
+  else if (checkIfMediaRequest(text, 'sticker')) {
     if (isInUnlimitedPlan && !hasBeen4Hours(user.lastMediaGenerationTime)) {
       await sendMessage(userNumber, 'text', { body: UNLIMITED_PLAN_RATE_LIMIT});
       return;
     }
     type = 'sticker';
-    const stickerPrompt = extractCommandPrompt(text, type);
+    const stickerPrompt = extractMediaRequestPrompt(text, type);
     const waitTextMessageBody = { body: STICKER_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const stickerUrl = await createImage(stickerPrompt, true);
@@ -108,15 +104,15 @@ export const handleMessage = async (body) => {
   if(!isUserAllowed && !isSubscribedToProPlan) return;
   switch (type) {
     case 'image':
-      await saveUser(userNumber, user.usedTokens + IMAGE_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, getCurrentUnixTime(), lang);
+      await saveUser(userNumber, user.usedTokens + IMAGE_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, getCurrentUnixTime());
       break;
     case 'sticker':
-      await saveUser(userNumber, user.usedTokens + STICKER_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, getCurrentUnixTime(), lang);
+      await saveUser(userNumber, user.usedTokens + STICKER_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, getCurrentUnixTime());
       break;
     default:
       let textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
       if (isAudio) textCost += audioCost;
-      await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, user.lastMediaGenerationTime, lang);
+      await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, user.lastMediaGenerationTime);
       break;
   }
 }
@@ -134,8 +130,8 @@ const extractMessageInfo = (body) => {
   return { userName, userNumber, messageType, text}
 };
 
-const addNewUser = async (userNumber, lang) => {
-  await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false, 0, uuid4(), 0, lang);
+const addNewUser = async (userNumber) => {
+  await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false, 0, uuid4(), 0);
   await sendMessage(userNumber, 'text', { body: START_MESSAGE_REPLY });
 }
 
