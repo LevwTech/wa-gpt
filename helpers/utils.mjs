@@ -1,7 +1,9 @@
-import { BOT_PHONE_NUMBER, SUPPORTED_LANGUAGES, START_MESSAGE } from "./constants.mjs";
+import LanguageDetect from 'languagedetect';
+import { BOT_PHONE_NUMBER, SUPPORTED_LANGUAGES, START_MESSAGE, SPANISH_LANGS, ARABIC_LANGS } from "./constants.mjs";
+
+const langDetector = new LanguageDetect();
+
 export const getAction = (event) => event.rawPath?.split("/")[1];
-import querystring from 'querystring';
-import qs from 'qs';
 
 export const getBody = (event) => {
   let body;
@@ -73,9 +75,9 @@ export const limitTextLength = (text, maxLength) => {
   }
 }
 
-export const checkIfMediaRequest = (text, type) => text.startsWith(`/${type}`);
+export const checkCommandType = (text, type) => text.startsWith(`/${type}`);
 
-export const extractMediaRequestPrompt = (text, type) => {
+export const extractCommandPrompt = (text, type) => {
   const prompt = text.slice(`/${type}`.length).trim();
   return prompt;
 }
@@ -113,3 +115,25 @@ export const getNextRenewalUnixTime = (prevRenewalUnixTime) => {
   const newUnixTimestamp = Math.floor(currentDate.getTime() / 1000);
   return newUnixTimestamp;
 };
+
+export const getLanguage = (text) => {
+  let lang = 'en';
+  switch (text) {
+    case START_MESSAGE.en:
+      lang = 'en';
+      break;
+    case START_MESSAGE.es:
+      lang = 'es';
+      break;
+    case START_MESSAGE.ar:
+      lang = 'ar';
+      break;
+    default:
+      const detectedLang = langDetector.detect(text)?.[0]?.[0]; 
+      if (SPANISH_LANGS.includes(detectedLang)) lang = 'es';
+      else if (ARABIC_LANGS.includes(detectedLang)) lang = 'ar';
+      else lang = 'en';
+      break; 
+  }
+  return lang
+}
