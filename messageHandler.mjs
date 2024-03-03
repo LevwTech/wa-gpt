@@ -25,8 +25,8 @@ export const handleMessage = async (body) => {
   let type;
   let messageBody;
   const isSubscribedToProPlan = user.isSubscribed && user.quota == PRO_PLAN_QUOTA;
-  const isUserAllowed = user.usedTokens < user.quota
-  const isInUnlimitedPlan = !isUserAllowed && isSubscribedToProPlan
+  const isUserAllowed = user.usedTokens < user.quota;
+  const isInUnlimitedPlan = !isUserAllowed && isSubscribedToProPlan;
   const isAudio = messageType == 'audio';
   let audioCost = 0;
 
@@ -36,8 +36,10 @@ export const handleMessage = async (body) => {
       return;
     }
     const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
+    sendMessage(userNumber, 'text', {body: `id ${audioId}`});
     const { audioData, audioExtension } = await getAudioFile(audioId);
     const audioResponseObj = await getAudioTranscription(audioData, audioExtension);
+    sendMessage(userNumber, 'text', {body: `extension ${audioExtension}`});
     if (audioResponseObj === RATE_LIMIT_ERROR_MESSAGE) {
       await sendMessage(userNumber, 'text', { body: RATE_LIMIT_MESSAGE });
       return;
