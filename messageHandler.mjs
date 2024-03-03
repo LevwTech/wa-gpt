@@ -17,7 +17,7 @@ export const handleMessage = async (body) => {
 
   if (!['text', 'audio'].includes(messageType) || !userNumber) return;
 
-  const lang = getLanguage(text);
+  let lang = getLanguage(text);
   const user = await getUser(userNumber);
   if (!user) await addNewUser(userNumber, lang);
   await checkRenewal(user);
@@ -32,9 +32,7 @@ export const handleMessage = async (body) => {
 
   if (isAudio) {
     if (!isUserAllowed && !isSubscribedToProPlan) {
-      type = 'interactive';
-      messageBody = getNotAllowedMessageBody(user);
-      await sendMessage(userNumber, type, messageBody);
+      await sendMessage(userNumber, 'interactive', getNotAllowedMessageBody(user));
       return;
     }
     const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
@@ -46,6 +44,7 @@ export const handleMessage = async (body) => {
     }
     text = audioResponseObj.text;
     audioCost = audioResponseObj.cost;
+    lang = getLanguage(text);
   }
 
   await saveMessage(userNumber, 'user', text);
