@@ -117,6 +117,7 @@ export const getNextRenewalUnixTime = (prevRenewalUnixTime) => {
 };
 
 export const getLanguage = (text) => {
+  if (!text) return 'en';
   if (checkCommandType(text, 'image')) text = extractCommandPrompt(text, 'image')
   if (checkCommandType(text, 'sticker')) text = extractCommandPrompt(text, 'sticker')
   let lang = 'en';
