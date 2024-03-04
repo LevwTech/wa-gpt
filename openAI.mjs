@@ -110,7 +110,7 @@ export const getAudioTranscription = async (data, extension) => {
     fs.unlinkSync(tempFilePath);  
     const text = limitTextLength(response.data.text, WHATSAPP_MAX_TEXT_LENGTH);
     const duration = response.data.duration;
-    const cost = duration * AUDIO_TOKEN_COST_PER_MINUTE;
+    const cost = (duration / 60) * AUDIO_TOKEN_COST_PER_MINUTE;
     return { text, cost };
   } catch (error) {
     const errorMessage = _.get(error, "response.data.error.code", null);
