@@ -35,6 +35,7 @@ export const handleMessage = async (body) => {
   if (isAudio) {
     if (!isUserAllowed && !isSubscribedToProPlan) {
       await sendMessage(userNumber, 'interactive', getNotAllowedMessageBody(user, lang));
+      await saveUserLang(user, userNumber, lang);
       return;
     }
     const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
@@ -42,6 +43,7 @@ export const handleMessage = async (body) => {
     const audioResponseObj = await getAudioTranscription(audioData, audioExtension);
     if (audioResponseObj === RATE_LIMIT_ERROR_MESSAGE) {
       await sendMessage(userNumber, 'text', { body: MESSAGES.RATE_LIMIT[lang] });
+      await saveUserLang(user, userNumber, lang);
       return;
     }
     text = audioResponseObj.text;
@@ -57,6 +59,7 @@ export const handleMessage = async (body) => {
   else if (checkCommandType(text, 'image')) {
     if (isInUnlimitedPlan && !hasBeen4Hours(user.lastMediaGenerationTime)) {
       await sendMessage(userNumber, 'text', { body: MESSAGES.UNLIMITED_PLAN_RATE_LIMIT[lang] });
+      await saveUserLang(user, userNumber, lang);
       return;
     }
     type = 'image';
@@ -67,6 +70,7 @@ export const handleMessage = async (body) => {
     if (imageUrl === RATE_LIMIT_ERROR_MESSAGE) {
       messageBody = { body: MESSAGES.RATE_LIMIT[lang] }
       await sendMessage(userNumber, 'text', messageBody);
+      await saveUserLang(user, userNumber, lang);
       return;
     }
     messageBody = {
@@ -76,6 +80,7 @@ export const handleMessage = async (body) => {
   else if (checkCommandType(text, 'sticker')) {
     if (isInUnlimitedPlan && !hasBeen4Hours(user.lastMediaGenerationTime)) {
       await sendMessage(userNumber, 'text', { body: MESSAGES.UNLIMITED_PLAN_RATE_LIMIT[lang]});
+      await saveUserLang(user, userNumber, lang);
       return;
     }
     type = 'sticker';
@@ -86,6 +91,7 @@ export const handleMessage = async (body) => {
     if (stickerUrl === RATE_LIMIT_ERROR_MESSAGE) {
       messageBody = { body: MESSAGES.RATE_LIMIT[lang] };
       await sendMessage(userNumber, 'text', messageBody);
+      await saveUserLang(user, userNumber, lang);
       return;
     }
     messageBody = {
@@ -99,6 +105,7 @@ export const handleMessage = async (body) => {
     if (gptResponse === RATE_LIMIT_ERROR_MESSAGE) {
       messageBody = { body: MESSAGES.RATE_LIMIT[lang] }
       await sendMessage(userNumber, 'text', messageBody);
+      await saveUserLang(user, userNumber, lang);
       return;
     }
     messageBody = { body: gptResponse };
@@ -156,4 +163,8 @@ const getAudioFile = async (audioId) => {
   );
   const audioData = mediaDataResponse.data;
   return { audioData, audioExtension }
+}
+
+const saveUserLang = async (user, userNumber, lang) => {
+  await saveUser(userNumber, user.usedTokens, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, user.lastMediaGenerationTime, lang)
 }

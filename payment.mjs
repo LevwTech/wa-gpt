@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import {  GUMROAD_UPDATE_SUBSCRIPTION_URL, GUMROAD_PAYMENT_URL, TIERS, GUMROAD_RESOURCE_TYPES, UNSUBSCRIBE_RESOURCE_TYPES } from './helpers/constants.mjs';
-import { getUserUsingSubscriptionId, saveUser } from './dynamoDB/users.mjs';
+import { getUserUsingSubscriptionId, saveUser , getUser } from './dynamoDB/users.mjs';
 import { getCurrentUnixTime, getNextRenewalUnixTime } from './helpers/utils.mjs';
 import sendMessage from './sendMessage.mjs';
 import MESSAGES from './helpers/botMessages.mjs';
@@ -82,8 +82,10 @@ export const subsriptionNotificationsHandler = async (body) => {
     const isSubsriptionEnded = UNSUBSCRIBE_RESOURCE_TYPES.includes(body.resource_name);
 
     if (isSale) {
-        await saveUser(userNumber, 0, quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId, 0, "en");
-        await sendMessage(userNumber, 'text', { body: MESSAGES.SUBSCRIBED.en });
+        const user = await getUser(userNumber);
+        if (!user) await saveUser(userNumber, 0, quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId, 0, "en");
+        else saveUser(userNumber, 0, quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId, 0, user.lang);
+        await sendMessage(userNumber, 'text', { body: MESSAGES.SUBSCRIBED[user.lang || "en"] });
     }
     else if (isSubsriptionRestarted) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
