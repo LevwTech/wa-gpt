@@ -2,7 +2,7 @@ import _ from "lodash";
 import uuid4 from "uuid4";
 import axios from "axios";
 import { START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE, PRO_PLAN_QUOTA, UNLIMITED_PLAN_RATE_LIMIT } from "./helpers/constants.mjs";
-import { checkIfMediaRequest, extractMediaRequestPrompt, getCurrentUnixTime, hasBeen4Hours } from "./helpers/utils.mjs";
+import { checkCommandType, extractCommandPrompt, getCurrentUnixTime, hasBeen4Hours } from "./helpers/utils.mjs";
 import { promptGPT, createImage, getAudioTranscription } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
@@ -49,13 +49,13 @@ export const handleMessage = async (body) => {
     type = 'interactive';
     messageBody = getNotAllowedMessageBody(user);
   }
-  else if (checkIfMediaRequest(text, 'image')) {
+  else if (checkCommandType(text, 'image')) {
     if (isInUnlimitedPlan && !hasBeen4Hours(user.lastMediaGenerationTime)) {
       await sendMessage(userNumber, 'text', { body: UNLIMITED_PLAN_RATE_LIMIT});
       return;
     }
     type = 'image';
-    const imagePrompt = extractMediaRequestPrompt(text, type);
+    const imagePrompt = extractCommandPrompt(text, type);
     const waitTextMessageBody = { body: IMAGE_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const imageUrl = await createImage(imagePrompt);
@@ -68,13 +68,13 @@ export const handleMessage = async (body) => {
       link: imageUrl,
     };
   }
-  else if (checkIfMediaRequest(text, 'sticker')) {
+  else if (checkCommandType(text, 'sticker')) {
     if (isInUnlimitedPlan && !hasBeen4Hours(user.lastMediaGenerationTime)) {
       await sendMessage(userNumber, 'text', { body: UNLIMITED_PLAN_RATE_LIMIT});
       return;
     }
     type = 'sticker';
-    const stickerPrompt = extractMediaRequestPrompt(text, type);
+    const stickerPrompt = extractCommandPrompt(text, type);
     const waitTextMessageBody = { body: STICKER_WAIT_MESSAGE};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const stickerUrl = await createImage(stickerPrompt, true);
