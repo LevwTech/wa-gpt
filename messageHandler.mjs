@@ -1,13 +1,14 @@
 import _ from "lodash";
 import uuid4 from "uuid4";
 import axios from "axios";
-import { START_MESSAGE_REPLY, IMAGE_WAIT_MESSAGE, STICKER_WAIT_MESSAGE, FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, RATE_LIMIT_MESSAGE, TEXT_TOKEN_COST_FREE, PRO_PLAN_QUOTA, UNLIMITED_PLAN_RATE_LIMIT } from "./helpers/constants.mjs";
+import { FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, TEXT_TOKEN_COST_FREE, PRO_PLAN_QUOTA } from "./helpers/constants.mjs";
 import { checkCommandType, extractCommandPrompt, getCurrentUnixTime, hasBeen4Hours, getLanguage } from "./helpers/utils.mjs";
 import { promptGPT, createImage, getAudioTranscription } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
 import { getNotAllowedMessageBody, checkRenewal } from "./payment.mjs";
 import sendMessage from "./sendMessage.mjs";
+import MESSAGES from "./helpers/botMessages.mjs";
 
 export const handleMessage = async (body) => {
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
@@ -33,14 +34,14 @@ export const handleMessage = async (body) => {
 
   if (isAudio) {
     if (!isUserAllowed && !isSubscribedToProPlan) {
-      await sendMessage(userNumber, 'interactive', getNotAllowedMessageBody(user));
+      await sendMessage(userNumber, 'interactive', getNotAllowedMessageBody(user, lang));
       return;
     }
     const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
     const { audioData, audioExtension } = await getAudioFile(audioId);
     const audioResponseObj = await getAudioTranscription(audioData, audioExtension);
     if (audioResponseObj === RATE_LIMIT_ERROR_MESSAGE) {
-      await sendMessage(userNumber, 'text', { body: RATE_LIMIT_MESSAGE });
+      await sendMessage(userNumber, 'text', { body: MESSAGES.RATE_LIMIT[lang] });
       return;
     }
     text = audioResponseObj.text;
@@ -51,20 +52,20 @@ export const handleMessage = async (body) => {
 
   if (!isUserAllowed && !isSubscribedToProPlan) {
     type = 'interactive';
-    messageBody = getNotAllowedMessageBody(user);
+    messageBody = getNotAllowedMessageBody(user, lang);
   }
   else if (checkCommandType(text, 'image')) {
     if (isInUnlimitedPlan && !hasBeen4Hours(user.lastMediaGenerationTime)) {
-      await sendMessage(userNumber, 'text', { body: UNLIMITED_PLAN_RATE_LIMIT});
+      await sendMessage(userNumber, 'text', { body: MESSAGES.UNLIMITED_PLAN_RATE_LIMIT[lang] });
       return;
     }
     type = 'image';
     const imagePrompt = extractCommandPrompt(text, type);
-    const waitTextMessageBody = { body: IMAGE_WAIT_MESSAGE};
+    const waitTextMessageBody = { body: MESSAGES.IMAGE_WAIT[lang] };
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const imageUrl = await createImage(imagePrompt);
     if (imageUrl === RATE_LIMIT_ERROR_MESSAGE) {
-      messageBody = { body: RATE_LIMIT_MESSAGE }
+      messageBody = { body: MESSAGES.RATE_LIMIT[lang] }
       await sendMessage(userNumber, 'text', messageBody);
       return;
     }
@@ -74,16 +75,16 @@ export const handleMessage = async (body) => {
   }
   else if (checkCommandType(text, 'sticker')) {
     if (isInUnlimitedPlan && !hasBeen4Hours(user.lastMediaGenerationTime)) {
-      await sendMessage(userNumber, 'text', { body: UNLIMITED_PLAN_RATE_LIMIT});
+      await sendMessage(userNumber, 'text', { body: MESSAGES.UNLIMITED_PLAN_RATE_LIMIT[lang]});
       return;
     }
     type = 'sticker';
     const stickerPrompt = extractCommandPrompt(text, type);
-    const waitTextMessageBody = { body: STICKER_WAIT_MESSAGE};
+    const waitTextMessageBody = { body: MESSAGES.STICKER_WAIT[lang]};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const stickerUrl = await createImage(stickerPrompt, true);
     if (stickerUrl === RATE_LIMIT_ERROR_MESSAGE) {
-      messageBody = { body: RATE_LIMIT_MESSAGE }
+      messageBody = { body: MESSAGES.RATE_LIMIT[lang] };
       await sendMessage(userNumber, 'text', messageBody);
       return;
     }
@@ -96,7 +97,7 @@ export const handleMessage = async (body) => {
     const conversation = await getMessages(userNumber);
     const gptResponse = await promptGPT(conversation, userName);
     if (gptResponse === RATE_LIMIT_ERROR_MESSAGE) {
-      messageBody = { body: RATE_LIMIT_MESSAGE }
+      messageBody = { body: MESSAGES.RATE_LIMIT[lang] }
       await sendMessage(userNumber, 'text', messageBody);
       return;
     }
@@ -136,7 +137,7 @@ const extractMessageInfo = (body) => {
 
 const addNewUser = async (userNumber, lang) => {
   await saveUser(userNumber, 0, FREE_STARTER_QUOTA, false, false, 0, uuid4(), 0, lang);
-  await sendMessage(userNumber, 'text', { body: START_MESSAGE_REPLY });
+  await sendMessage(userNumber, 'text', { body: MESSAGES.START_REPLY[lang] });
 }
 
 const getAudioFile = async (audioId) => {

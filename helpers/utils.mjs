@@ -1,5 +1,6 @@
 import LanguageDetect from 'languagedetect';
-import { BOT_PHONE_NUMBER, SUPPORTED_LANGUAGES, START_MESSAGE, SPANISH_LANGS, ARABIC_LANGS } from "./constants.mjs";
+import { BOT_PHONE_NUMBER, SUPPORTED_LANGUAGES, SPANISH_LANGS, ARABIC_LANGS } from "./constants.mjs";
+import MESSAGES from "./botMessages.mjs";
 
 const langDetector = new LanguageDetect();
 
@@ -89,7 +90,7 @@ export const extractCommandPrompt = (text, type) => {
 export const getWhatsAppBotUrl = (lang) => {
   lang = lang.toLowerCase();
   if(!SUPPORTED_LANGUAGES.includes(lang)) lang = "en";
- const WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${BOT_PHONE_NUMBER}&text=${START_MESSAGE[lang].replace(/ /g, "%20").replace("?","%3F")}`;
+ const WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${BOT_PHONE_NUMBER}&text=${MESSAGES.START[lang].replace(/ /g, "%20").replace("?","%3F")}`;
   return WHATSAPP_URL
 }
 
@@ -122,13 +123,13 @@ export const getLanguage = (text) => {
   if (checkCommandType(text, 'sticker')) text = extractCommandPrompt(text, 'sticker')
   let lang = 'en';
   switch (text) {
-    case START_MESSAGE.en:
+    case MESSAGES.START.en:
       lang = 'en';
       break;
-    case START_MESSAGE.es:
+    case MESSAGES.START.es:
       lang = 'es';
       break;
-    case START_MESSAGE.ar:
+    case MESSAGES.START.ar:
       lang = 'ar';
       break;
     default:

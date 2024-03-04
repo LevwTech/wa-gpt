@@ -1,47 +1,48 @@
-import {  GUMROAD_UPDATE_SUBSCRIPTION_URL, GUMROAD_PAYMENT_URL, TIERS, GUMROAD_RESOURCE_TYPES, UNSUBSCRIBE_RESOURCE_TYPES, SUBSCRIBED_MESSAGE, UPGRADED_SUBSCRIPTION_MESSAGE } from './helpers/constants.mjs';
+import _ from 'lodash';
+import {  GUMROAD_UPDATE_SUBSCRIPTION_URL, GUMROAD_PAYMENT_URL, TIERS, GUMROAD_RESOURCE_TYPES, UNSUBSCRIBE_RESOURCE_TYPES } from './helpers/constants.mjs';
 import { getUserUsingSubscriptionId, saveUser } from './dynamoDB/users.mjs';
 import { getCurrentUnixTime, getNextRenewalUnixTime } from './helpers/utils.mjs';
 import sendMessage from './sendMessage.mjs';
-import _ from 'lodash';
+import MESSAGES from './helpers/botMessages.mjs';
 
-export const getNotAllowedMessageBody = (user) => {
-    if  (user.isSubscribed) return getTokensLimitExceededMessage(user.subscriptionId);
-    else if (user.hasSubscribed) return getCouldntRenewSubscriptionMessage(user.subscriptionId);
-    else return getFreeTrialEndedMessage(user.userNumber) // User is in free trial
+export const getNotAllowedMessageBody = (user, lang) => {
+    if  (user.isSubscribed) return getTokensLimitExceededMessage(user.subscriptionId, lang || user.lang);
+    else if (user.hasSubscribed) return getCouldntRenewSubscriptionMessage(user.subscriptionId, lang || user.lang);
+    else return getFreeTrialEndedMessage(user.userNumber, lang || user.lang);
 }
 
-const getFreeTrialEndedMessage = (userNumber) => {
+const getFreeTrialEndedMessage = (userNumber, lang) => {
     return {
         type: "cta_url",
         body: {
-            text: "Your free trial of WhatsApp AI Assistant has ended. Keep creating stickers 🎨, generating images 🖼️, and getting answers instantly by subscribing now!"
+            text: MESSAGES.FREE_TRIAL_ENDED[lang]
         },
         footer: {
-            text: "Don't miss out on the full experience! ✨"
+            text: MESSAGES.ENJOY_FOOTER_1[lang]
         },
         action: {
             name: "cta_url",
             parameters: {
-                display_text: "Subscribe Now",
+                display_text: MESSAGES.SUBSCRIBE_BTN[lang],
                 url: `${GUMROAD_PAYMENT_URL}?userNumber=${userNumber}`
             }
         }
     }
 }
 
-const getCouldntRenewSubscriptionMessage = (subscriptionId) => {
+const getCouldntRenewSubscriptionMessage = (subscriptionId, lang) => {
     return {
         type: "cta_url",
         body: {
-            text: "I couldn't renew your subscription. Don't worry! You can still enjoy the features by resubscribing."
+            text: MESSAGES.COULDNT_RENEW[lang]
         },
         footer: {
-            text: "Explore and enjoy the full experience! ✨"
+            text: MESSAGES.ENJOY_FOOTER_2[lang]
         },
         action: {
             name: "cta_url",
             parameters: {
-                display_text: "Renew Subscription",
+                display_text: MESSAGES.RENEW_BTN[lang],
                 url: `${GUMROAD_UPDATE_SUBSCRIPTION_URL}/${subscriptionId}/manage`
             }
         }
@@ -49,19 +50,19 @@ const getCouldntRenewSubscriptionMessage = (subscriptionId) => {
 
 };
 
-const getTokensLimitExceededMessage = (subscriptionId) => {
+const getTokensLimitExceededMessage = (subscriptionId, lang) => {
     return {
         type: "cta_url",
         body: {
-            text: "You've used up all your sticker and image generations 🚀 To keep the creativity flowing, why not consider upgrading to a higher tier?"
+            text: MESSAGES.TOKENS_ENXCEEDED[lang]
         },
         footer: {
-            text: "Explore and enjoy the full experience! ✨"
+            text: MESSAGES.ENJOY_FOOTER_2[lang]
         },
         action: {
             name: "cta_url",
             parameters: {
-                display_text: "Upgrade Subscription",
+                display_text: MESSAGES.UPGRADE_BTN[lang],
                 url: `${GUMROAD_UPDATE_SUBSCRIPTION_URL}/${subscriptionId}/manage`
             }
         }
@@ -82,19 +83,19 @@ export const subsriptionNotificationsHandler = async (body) => {
 
     if (isSale) {
         await saveUser(userNumber, 0, quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId, 0, "en");
-        await sendMessage(userNumber, 'text', { body: SUBSCRIBED_MESSAGE });
+        await sendMessage(userNumber, 'text', { body: MESSAGES.SUBSCRIBED.en });
     }
     else if (isSubsriptionRestarted) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
         await saveUser(user.userNumber, 0, quota || user.quota, true, true, getNextRenewalUnixTime(getCurrentUnixTime()), subscriptionId, user.lastMediaGenerationTime, user.lang);
-        await sendMessage(user.userNumber, 'text', { body: SUBSCRIBED_MESSAGE });
+        await sendMessage(user.userNumber, 'text', { body: MESSAGES.SUBSCRIBED[user.lang] });
     }
     else if (isSubsriptionUpdated) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
         const newTier = _.get(body, 'new_plan.tier.name', null);
         const newQuota = TIERS[newTier];
         await saveUser(user.userNumber, user.usedTokens, newQuota, true, true, user.nextRenewalUnixTime, subscriptionId, user.lastMediaGenerationTime, user.lang);
-        await sendMessage(user.userNumber, 'text', { body: UPGRADED_SUBSCRIPTION_MESSAGE });
+        await sendMessage(user.userNumber, 'text', { body: MESSAGES.UPGRADED_SUBSCRIPTION[user.lang] });
     }
     else if (isSubsriptionEnded) {
         const user = await getUserUsingSubscriptionId(subscriptionId);
