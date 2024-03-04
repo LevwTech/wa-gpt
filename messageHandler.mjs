@@ -20,13 +20,21 @@ export const handleMessage = async (body) => {
 
   const user = await getUser(userNumber);
   if (!user) await addNewUser(userNumber);
+  await checkRenewal(user);
 
+  let type;
+  let messageBody;
+  const isSubscribedToProPlan = user.isSubscribed && user.quota == PRO_PLAN_QUOTA;
+  const isUserAllowed = user.usedTokens < user.quota
+  const isInUnlimitedPlan = !isUserAllowed && isSubscribedToProPlan
   const isAudio = messageType == 'audio';
   let audioCost = 0;
 
-  await checkRenewal(user);
-
   if (isAudio) {
+    if (!isUserAllowed && !isSubscribedToProPlan) {
+      await sendMessage(userNumber, 'interactive', getNotAllowedMessageBody(user));
+      return;
+    }
     const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
     const { audioData, audioExtension } = await getAudioFile(audioId);
     const audioResponseObj = await getAudioTranscription(audioData, audioExtension);
@@ -38,12 +46,6 @@ export const handleMessage = async (body) => {
     audioCost = audioResponseObj.cost;
   }
   await saveMessage(userNumber, 'user', text);
-
-  let type;
-  let messageBody;
-  const isSubscribedToProPlan = user.isSubscribed && user.quota == PRO_PLAN_QUOTA;
-  const isUserAllowed = user.usedTokens < user.quota
-  const isInUnlimitedPlan = !isUserAllowed && isSubscribedToProPlan
 
   if (!isUserAllowed && !isSubscribedToProPlan) {
     type = 'interactive';
