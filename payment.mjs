@@ -24,7 +24,7 @@ const getFreeTrialEndedMessage = (userNumber, lang) => {
             name: "cta_url",
             parameters: {
                 display_text: MESSAGES.SUBSCRIBE_BTN[lang],
-                url: `${GUMROAD_PAYMENT_URL}?userNumber=${userNumber}`
+                url: `${GUMROAD_PAYMENT_URL}-${lang}?userNumber=${userNumber}`
             }
         }
     }

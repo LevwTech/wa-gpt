@@ -15,8 +15,14 @@ export const GUMROAD_PAYMENT_URL = "https://levw.gumroad.com/l/whatsapp";
 export const GUMROAD_UPDATE_SUBSCRIPTION_URL = "https://app.gumroad.com/subscriptions";
 export const TIERS = {
     "Basic Plan": 40,
+    "El Plan Básico": 40,
+    "الاشتراك الأول": 40,
     "Standard Plan (Best Deal)": 120,
+    "Plan Estándar (Mejor Oferta)": 120,
+    "الاشتراك المتوسط (الصفقة الأفضل)": 120,
     "Pro Plan": 400,
+    "Plan Profesional": 400,
+    "الاشتراك المتقدم": 400
 }
 export const PRO_PLAN_QUOTA = 400;
 export const GUMROAD_RESOURCE_TYPES = {
