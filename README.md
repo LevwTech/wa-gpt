@@ -22,7 +22,7 @@
 - API Gateway
 - S3
 - Sharp for Image Processing
-- OpenAI GPT and DALL-E
+- OpenAI GPT, DALL-E and Whisper
 - Gumroad APIs for payment
 - Github Actions for AWS Automatic Deployments
 - Next.js for Frontend
