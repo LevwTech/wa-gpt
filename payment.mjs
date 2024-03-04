@@ -54,7 +54,7 @@ const getTokensLimitExceededMessage = (subscriptionId, lang) => {
     return {
         type: "cta_url",
         body: {
-            text: MESSAGES.TOKENS_ENXCEEDED[lang]
+            text: MESSAGES.TOKENS_EXCEEDED[lang]
         },
         footer: {
             text: MESSAGES.ENJOY_FOOTER_2[lang]

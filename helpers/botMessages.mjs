@@ -49,7 +49,7 @@ const MESSAGES = {
         es: "Tu prueba gratuita del Asistente de IA de WhatsApp ha terminado. ¡Sigue creando pegatinas 🎨, generando imágenes 🖼️ y obteniendo respuestas al instante suscribiéndote ahora!",
         ar: "انتهت فترة الاختبار المجاني لمساعد واتساب للذكاء الصناعي. استمر في إنشاء الملصقات 🎨، وتوليد الصور 🖼️، والحصول على الإجابات على الفور عن طريق الاشتراك الآن!",
     },
-    TOKENS_ENXCEEDED: {
+    TOKENS_EXCEEDED: {
         en: "You've used up all your sticker and image generations 🚀 To keep the creativity flowing, why not consider upgrading to a higher tier?",
         es: "Has utilizado todas tus generaciones de pegatinas e imágenes 🚀 Para mantener la creatividad fluyendo, ¿por qué no consideras la posibilidad de actualizar a un nivel superior?",
         ar: "لقد استخدمت جميع ملصقاتك وتوليدات صورك 🚀 للحفاظ على تدفق الإبداع، لماذا لا تفكر في الترقية إلى طبقة أعلى؟",
