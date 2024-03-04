@@ -76,8 +76,8 @@ const MESSAGES = {
     },
     UPGRADE_BTN: {
         en: "Upgrade Subscription",
-        es: "Actualizar suscripción",
-        ar: "ترقية الاشتراك",
+        es: "Actualizar",
+        ar: "الترقية",
     }
 }
 export default MESSAGES
