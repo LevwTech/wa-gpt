@@ -64,6 +64,10 @@ export const handleMessage = async (body) => {
     }
     type = 'image';
     const imagePrompt = extractCommandPrompt(text, type);
+    if (!imagePrompt) {
+      await sendMessage(userNumber, 'text', { body: MESSAGES.IMAGE_WITHOUT_TEXT[user.lang]})
+      return
+    }
     const waitTextMessageBody = { body: MESSAGES.IMAGE_WAIT[lang] };
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const imageUrl = await createImage(imagePrompt);
@@ -85,6 +89,10 @@ export const handleMessage = async (body) => {
     }
     type = 'sticker';
     const stickerPrompt = extractCommandPrompt(text, type);
+    if (!stickerPrompt) {
+      await sendMessage(userNumber, 'text', { body: MESSAGES.STICKER_WITHOUT_TEXT[user.lang]})
+      return
+    }
     const waitTextMessageBody = { body: MESSAGES.STICKER_WAIT[lang]};
     await sendMessage(userNumber, 'text', waitTextMessageBody);
     const stickerUrl = await createImage(stickerPrompt, true);
