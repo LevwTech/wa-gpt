@@ -37,12 +37,12 @@ const MESSAGES = {
     IMAGE_WITHOUT_TEXT: {
         en: "Oops! You didn't provide any text for your image. Please use the /image command followed by the text you want on the image.",
         es: "¡Ops! No proporcionaste ningún texto para tu imagen. Por favor, usa el comando /imagen seguido del texto que quieres en la imagen.",
-        ar: "عفوًا! لم تقدم أي نص لصورتك. يرجى استخدام أمر /image متبوعًا بالنص الذي تريده على الصورة."
+        ar: "عفوًا! لم تقدم أي نص لصورتك. يرجى استخدام أمر /image متبوعًا بالنص الذي تريده في الصورة."
         },
     STICKER_WITHOUT_TEXT: {
         en: "Oops! You didn't provide any text for your sticker. Please use the /sticker command followed by the text you want on the sticker.",
         es: "¡Ops! No proporcionaste ningún texto para tu sticker. Por favor, usa el comando /sticker seguido del texto que quieres en el sticker.",
-        ar: "عفوًا! لم تقدم أي نص لملصقك. يرجى استخدام أمر /sticker متبوعًا بالنص الذي تريده على الملصق."
+        ar: "عفوًا! لم تقدم أي نص لملصقك. يرجى استخدام أمر /sticker متبوعًا بالنص الذي تريده في الملصق."
     },
     UNLIMITED_PLAN_RATE_LIMIT: {
         en: "You've been generating a lot of stickers and images lately. Please try again in a few hours. 🕒🙏",
