@@ -1,6 +1,7 @@
 import _ from "lodash";
 import uuid4 from "uuid4";
 import axios from "axios";
+import { getTextExtractor } from 'office-text-extractor'
 import { FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, TEXT_TOKEN_COST_FREE, PRO_PLAN_QUOTA } from "./helpers/constants.mjs";
 import { checkCommandType, extractCommandPrompt, getCurrentUnixTime, hasBeen4Hours, getLanguage } from "./helpers/utils.mjs";
 import { promptGPT, createImage, getAudioTranscription } from "./openAI.mjs";
@@ -10,6 +11,8 @@ import { getNotAllowedMessageBody, checkRenewal } from "./payment.mjs";
 import sendMessage from "./sendMessage.mjs";
 import MESSAGES from "./helpers/botMessages.mjs";
 
+const extractor = getTextExtractor()
+
 export const handleMessage = async (body) => {
   const isStatusUpdateNotification = _.get(body, 'entry[0].changes[0].value.statuses[0].id', null);
   if (isStatusUpdateNotification) return;
@@ -17,7 +20,7 @@ export const handleMessage = async (body) => {
   let { userName, userNumber, messageType, text } = extractMessageInfo(body);
 
   // If user sends a message that is not text or audio, we don't want to process it
-  if (!['text', 'audio'].includes(messageType) || !userNumber) return;
+  if (!['text', 'audio', 'document'].includes(messageType) || !userNumber) return;
 
   let lang = getLanguage(text);
   const user = await getUser(userNumber);
@@ -30,8 +33,15 @@ export const handleMessage = async (body) => {
   const isUserAllowed = user.usedTokens < user.quota
   const isInUnlimitedPlan = !isUserAllowed && isSubscribedToProPlan
   const isAudio = messageType == 'audio';
+  const isDocument = messageType == 'document';
   let audioCost = 0;
-
+  if (isDocument) {
+    const documentId = _.get(body, 'entry[0].changes[0].value.messages[0].document.id', null);
+    const caption = _.get(body, 'entry[0].changes[0].value.messages[0].document.caption', null);
+    const { fileData } = await getFile(documentId);
+    const fileText = await extractor.extractText({ input: fileData, type: 'buffer' })
+    text = `Given this text: "${fileText}" Help with this: ${caption || 'Summarize.'}`
+  }
   if (isAudio) {
     if (!isUserAllowed && !isSubscribedToProPlan) {
       await sendMessage(userNumber, 'interactive', getNotAllowedMessageBody(user, lang));
@@ -39,8 +49,8 @@ export const handleMessage = async (body) => {
       return;
     }
     const audioId = _.get(body, 'entry[0].changes[0].value.messages[0].audio.id', null);
-    const { audioData, audioExtension } = await getAudioFile(audioId);
-    const audioResponseObj = await getAudioTranscription(audioData, audioExtension);
+    const { fileData, fileExtension } = await getFile(audioId);
+    const audioResponseObj = await getAudioTranscription(fileData, fileExtension);
     if (audioResponseObj === RATE_LIMIT_ERROR_MESSAGE) {
       await sendMessage(userNumber, 'text', { body: MESSAGES.RATE_LIMIT[lang] });
       await saveUserLang(user, userNumber, lang);
@@ -155,22 +165,22 @@ const addNewUser = async (userNumber, lang) => {
   await sendMessage(userNumber, 'text', { body: MESSAGES.START_REPLY[lang] });
 }
 
-const getAudioFile = async (audioId) => {
+const getFile = async (fileId) => {
   const headers = {
     Authorization: `Bearer ${process.env.WHATSAPP_SYSTEM_ACCESS_TOKEN}`,
   };
-  const mediaResponse = await axios.get(
-    `https://graph.facebook.com/v17.0/${audioId}`,
+  const fileResponse = await axios.get(
+    `https://graph.facebook.com/v17.0/${fileId}`,
     { headers },
   );
-  const mediaMetaDataUrl = mediaResponse.data.url
-  const audioExtension = mediaResponse.data.mime_type.split('/')[1];
-  const mediaDataResponse = await axios.get(
-    mediaMetaDataUrl,
+  const fileMetaDataUrl = fileResponse.data.url
+  const fileExtension = fileResponse?.data?.mime_type?.split('/')?.[1];
+  const fileDataResponse = await axios.get(
+    fileMetaDataUrl,
     { headers, responseType: 'arraybuffer' },
   );
-  const audioData = mediaDataResponse.data;
-  return { audioData, audioExtension }
+  const fileData = fileDataResponse.data;
+  return { fileData, fileExtension }
 }
 
 const saveUserLang = async (user, userNumber, lang) => {
