@@ -82,7 +82,7 @@ const MESSAGES = {
     RENEW_BTN: {
         en: "Renew Subscription",
         es: "Renovar suscripción",
-        ar: "تجديد الاشتراك",
+        ar: "التجديد",
     },
     UPGRADE_BTN: {
         en: "Upgrade Subscription",
