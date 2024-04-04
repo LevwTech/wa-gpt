@@ -2,7 +2,7 @@
 
 ![WhatsApp AI Assistant](https://i.ibb.co/QQB67tg/wabg.png)
 
-**Generate stickers, images, chat & send voice messages effortlessly**
+**Chat, Create Stickers & Images, Send Voice Notes, Files, and More!**
 
 ## Features
 
