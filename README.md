@@ -29,4 +29,4 @@
 
 ## Website URL
 
-[whatsai.net](https://whatsai.net)
+[whatsapp-assistant.com](https://whatsapp-assistant.com)
