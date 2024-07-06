@@ -120,7 +120,7 @@ export const handleMessage = async (body) => {
   else {
     type = 'text';
     const conversation = await getMessages(userNumber);
-    const { isRealTime, searchTerm} = await needRealTimeInfo(conversation);
+    const { isRealTime, searchTerm } = await needRealTimeInfo(conversation);
     if (isRealTime) {
       const searchResult = await searchGoogle(searchTerm);
       conversation.push({ role: "system", content: searchResult });
