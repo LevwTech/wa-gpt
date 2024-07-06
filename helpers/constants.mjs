@@ -38,3 +38,9 @@ export const GUMROAD_RESOURCE_TYPES = {
 export const UNSUBSCRIBE_RESOURCE_TYPES = [GUMROAD_RESOURCE_TYPES.SUBSCRIPTION_ENDED, GUMROAD_RESOURCE_TYPES.CANCELLATION, GUMROAD_RESOURCE_TYPES.REFUND, GUMROAD_RESOURCE_TYPES.DISPUTE, GUMROAD_RESOURCE_TYPES.DISPUTE_WON];
 export const SPANISH_LANGS = ["spanish", "hawaiian"];
 export const ARABIC_LANGS = ["arabic", "farsi", "pashto"];
+export const OPEN_AI_MODELS = {
+    GPT4o: "gpt-4o",
+    GPT35Turbo: "gpt-3.5-turbo",
+    DALL3: "dall-e-3",
+    WHISPER: "whisper-1",
+};

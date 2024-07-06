@@ -4,12 +4,13 @@ import axios from "axios";
 import { getTextExtractor } from 'office-text-extractor'
 import { FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, TEXT_TOKEN_COST_FREE, PRO_PLAN_QUOTA } from "./helpers/constants.mjs";
 import { checkCommandType, extractCommandPrompt, getCurrentUnixTime, hasBeen4Hours, getLanguage } from "./helpers/utils.mjs";
-import { promptGPT, createImage, getAudioTranscription } from "./openAI.mjs";
+import { promptGPT, createImage, getAudioTranscription, needRealTimeInfo } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
 import { saveUser, getUser } from "./dynamoDB/users.mjs";
 import { getNotAllowedMessageBody, checkRenewal } from "./payment.mjs";
 import sendMessage from "./sendMessage.mjs";
 import MESSAGES from "./helpers/botMessages.mjs";
+import { searchGoogle } from "./searchService.mjs";
 
 const extractor = getTextExtractor()
 
@@ -119,6 +120,11 @@ export const handleMessage = async (body) => {
   else {
     type = 'text';
     const conversation = await getMessages(userNumber);
+    const { isRealTime, searchTerm} = await needRealTimeInfo(conversation);
+    if (isRealTime) {
+      const searchResult = await searchGoogle(searchTerm);
+      conversation.push({ role: "system", content: searchResult });
+    }
     const gptResponse = await promptGPT(conversation, userName);
     if (gptResponse === RATE_LIMIT_ERROR_MESSAGE) {
       messageBody = { body: MESSAGES.RATE_LIMIT[lang] }

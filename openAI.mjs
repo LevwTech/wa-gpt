@@ -1,7 +1,7 @@
 import axios from "axios";
 import _ from "lodash";
 import fs from 'fs';
-import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH, RATE_LIMIT_ERROR_MESSAGE, AUDIO_TOKEN_COST_PER_MINUTE } from "./helpers/constants.mjs";
+import { SUMMARIZE_SYSTEM_MESSAGE, WHATSAPP_MAX_TEXT_LENGTH, DALLE_MAX_TEXT_LENGTH, RATE_LIMIT_ERROR_MESSAGE, AUDIO_TOKEN_COST_PER_MINUTE, OPEN_AI_MODELS } from "./helpers/constants.mjs";
 import { limitTextLength } from "./helpers/utils.mjs";
 // import { limitTextLength, generateStickerPrompt } from "./helpers/utils.mjs";
 import { getProcessedSticker } from "./imageService.mjs";
@@ -18,7 +18,7 @@ export const promptGPT = async (conversation, userName) => {
       `${openAIURL}/chat/completions`,
       {
         messages: [systemMessage, ...conversation],
-        model: "gpt-4o",
+        model: OPEN_AI_MODELS.GPT4o,
       },
       { headers },
     );
@@ -36,7 +36,7 @@ export const promptGPTSummarize = async (conversation) => {
       `${openAIURL}/chat/completions`,
       {
         messages: [...conversation, SUMMARIZE_SYSTEM_MESSAGE],
-        model: "gpt-3.5-turbo",
+        model: OPEN_AI_MODELS.GPT35Turbo,
       },
       { headers },
   );
@@ -50,7 +50,7 @@ export const createImage = async (prompt, isSticker) => {
     const response = await axios.post(
       `${openAIURL}/images/generations`,
       {
-        model: "dall-e-3",
+        model: OPEN_AI_MODELS.DALL3,
         prompt,
       },
       { headers }
@@ -80,7 +80,7 @@ const getGPTImagePrompt = async (prompt, isSticker) => {
       `${openAIURL}/chat/completions`,
       {
         messages: [{role: "system", content: isSticker ?  GptPromptToDalleSticker : GptPromptToDalleImage}],
-        model: "gpt-3.5-turbo",
+        model: OPEN_AI_MODELS.GPT4o,
       },
       { headers },
     );
@@ -103,7 +103,7 @@ export const getAudioTranscription = async (data, extension) => {
     const response = await axios.post(`${openAIURL}/audio/transcriptions`, 
     {
       file: fs.createReadStream(tempFilePath),
-      model: "whisper-1",
+      model: OPEN_AI_MODELS.WHISPER,
       response_format: "verbose_json"
     }, 
     { headers: audioHeaders });
@@ -118,3 +118,49 @@ export const getAudioTranscription = async (data, extension) => {
     else throw new Error(error)
   }
 }
+
+export const needRealTimeInfo = async (conversation) => {
+  try {
+    const response = await axios.post(
+      `${openAIURL}/chat/completions`,
+      {
+        messages: [
+          {
+            role: "system",
+            content: "Analyze the conversation and determine if the user's question requires real-time information. Respond with a JSON object containing 'isRealTime' (boolean) and 'searchTerm' (string)."
+          },
+          ...conversation
+        ],
+        model: OPEN_AI_MODELS.GPT4o,
+        function_call: { name: "determine_real_time_need" },
+        functions: [
+          {
+            name: "determine_real_time_need",
+            description: "Analyze the conversation to determine if the user's question requires up-to-date or real-time information that may not be in the AI's knowledge base. If so, extract or formulate an appropriate search term to find this information. Consider factors such as questions about current events, recent developments, live data (e.g., weather, stocks, sports' matches scores), or any topic that might have changed since the AI's last update.",
+            parameters: {
+              type: "object",
+              properties: {
+                isRealTime: {
+                  type: "boolean",
+                  description: "Indicates if the question requires real-time information"
+                },
+                searchTerm: {
+                  type: "string",
+                  description: "The search term to be used if real-time information is needed"
+                }
+              },
+              required: ["isRealTime", "searchTerm"]
+            }
+          }
+        ]
+      },
+      { headers }
+    );
+
+    const result = JSON.parse(response.data.choices[0].message.function_call.arguments);
+    return result;
+  } catch (error) {
+    console.error("Error in needRealTimeInfo:", error);
+    return { isRealTime: false, searchTerm: "" };
+  }
+};
