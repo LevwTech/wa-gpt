@@ -30,3 +30,7 @@
 ## Website URL
 
 [whatsapp-assistant.com](https://whatsapp-assistant.com)
+
+## Open Source
+
+Curious about the journey behind WhatsApp AI Assistant and why it was open-sourced? Check out the detailed story and technical dive in this [LinkedIn article](https://medium.com/@levw/the-journey-of-my-saas-chatbot-from-launch-to-farewell-lessons-learned-technical-dive-4a4c1444f65a).
