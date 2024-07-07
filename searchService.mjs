@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { SEARCH_RESULTS_NUMBER } from './helpers/constants.mjs';
 
 export const searchGoogle = async (searchTerm) => {
     try {
@@ -7,7 +8,7 @@ export const searchGoogle = async (searchTerm) => {
           key: process.env.GOOGLE_API_KEY,
           cx: process.env.GOOGLE_SEARCH_ENGINE_ID,
           q: searchTerm,
-          num: 5,
+          num: SEARCH_RESULTS_NUMBER,
           fields: 'items(title,snippet)'
         }
       });

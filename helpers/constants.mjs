@@ -5,7 +5,7 @@ export const SUMMARIZE_SYSTEM_MESSAGE = { content: "Summarize the conversation s
 export const WHATSAPP_MAX_TEXT_LENGTH = 4096;
 export const DALLE_MAX_TEXT_LENGTH = 4000;
 export const FREE_STARTER_QUOTA = 5;
-export const TEXT_TOKEN_COST = 1/150;
+export const TEXT_TOKEN_COST = 9/200;
 export const TEXT_TOKEN_COST_FREE = 0.25;
 export const AUDIO_TOKEN_COST_PER_MINUTE = 0.15;
 export const IMAGE_TOKEN_COST = 1;
@@ -44,3 +44,4 @@ export const OPEN_AI_MODELS = {
     DALL3: "dall-e-3",
     WHISPER: "whisper-1",
 };
+export const SEARCH_RESULTS_NUMBER = 5;
