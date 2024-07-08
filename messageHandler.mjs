@@ -2,7 +2,7 @@ import _ from "lodash";
 import uuid4 from "uuid4";
 import axios from "axios";
 import { getTextExtractor } from 'office-text-extractor'
-import { FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, TEXT_TOKEN_COST_FREE, PRO_PLAN_QUOTA } from "./helpers/constants.mjs";
+import { FREE_STARTER_QUOTA, TEXT_TOKEN_COST, IMAGE_TOKEN_COST, STICKER_TOKEN_COST, RATE_LIMIT_ERROR_MESSAGE, PRO_PLAN_QUOTA } from "./helpers/constants.mjs";
 import { checkCommandType, extractCommandPrompt, getCurrentUnixTime, hasBeen4Hours, getLanguage } from "./helpers/utils.mjs";
 import { promptGPT, createImage, getAudioTranscription, needRealTimeInfo } from "./openAI.mjs";
 import { saveMessage, getMessages } from "./dynamoDB/conversations.mjs";
@@ -146,7 +146,7 @@ export const handleMessage = async (body) => {
       await saveUser(userNumber, user.usedTokens + STICKER_TOKEN_COST, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, getCurrentUnixTime(), lang);
       break;
     default:
-      let textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST_FREE;
+      let textCost = user.isSubscribed ? TEXT_TOKEN_COST : TEXT_TOKEN_COST;
       if (isAudio) textCost += audioCost;
       await saveUser(userNumber, user.usedTokens + textCost, user.quota, user.isSubscribed, user.hasSubscribed, user.nextRenewalUnixTime, user.subscriptionId, user.lastMediaGenerationTime, lang);
       break;
