@@ -33,4 +33,4 @@
 
 ## Open Source
 
-Curious about the journey behind WhatsApp AI Assistant and why it was open-sourced? Check out the detailed story and technical dive in this [Medium article](https://medium.com/@levw/the-journey-of-my-saas-chatbot-from-launch-to-farewell-lessons-learned-technical-dive-4a4c1444f65a).
+That project was built months before Meta AI was released inside WhatsApp. Now that it’s available, I’ve decided to open-source this (zucked).
