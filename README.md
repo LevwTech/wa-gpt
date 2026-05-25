@@ -27,10 +27,6 @@
 - Github Actions for AWS Automatic Deployments
 - Next.js for Frontend
 
-## Website URL
-
-[whatsapp-assistant.com](https://whatsapp-assistant.com)
-
 ## Open Source
 
 That project was built months before Meta AI was released inside WhatsApp. Now that it’s available, I’ve decided to open-source this (zucked).
